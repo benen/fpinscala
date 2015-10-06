@@ -75,7 +75,12 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Nil => Nil
   }
 
-  def init[A](l: List[A]): List[A] = sys.error("todo")
+  /* Exercise 3.6 */
+  def init[A](l: List[A]): List[A] = l match {
+    case Cons(x, Nil) => Nil
+    case Cons(x, xs) => Cons(x, init(xs))
+    case Nil => Nil
+  }
 
   def length[A](l: List[A]): Int = sys.error("todo")
 
