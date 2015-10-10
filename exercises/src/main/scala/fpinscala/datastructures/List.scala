@@ -82,9 +82,39 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Nil => Nil
   }
 
-  def length[A](l: List[A]): Int = sys.error("todo")
+  /* Exercise 3.7 */
+  // No it cannot, as it must traverse to the end of the List first before it can evaluate it's function f
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
+  /* Exercise 3.8 */
+  // It states they are recursive.
+
+  /* Exercise 3.9 */
+  def length[A](l: List[A]): Int = foldRight(l, 0)((x, acc) => acc + 1)
+
+  /* Exercise 3.10 */
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+  }
+
+  /* Exercise 3.11 */
+  def sumLeft(l: List[Double]): Double = foldLeft(l, 0.0)(_ + _)
+  def prodLeft(l: List[Double]): Double = foldLeft(l, 1.0)(_ * _)
+  def lenLeft[A](l: List[A]): Int = foldLeft(l, 0)((acc, x) => acc + 1)
+
+  /* Exercise 3.12 */
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil: List[A]){(acc, x) => Cons(x, acc)}
+
+  /* Exercise 3.13 */
+  // Builds up a chain of functions
+  def foldLeftViaRight[A, B](l: List[A], z: B)(f: (B, A) => B) = {
+    foldRight(l, (b: B) => b){(x, acc) =>
+      (b: B) => acc(f(b, x))
+    }(z)
+  }
+  // Tail recursive but requiring of two passes
+  def foldRightViaLeft[A, B](l: List[A], z: B)(f: (A, B) => B) = foldLeft(reverse(l), z)((acc, x) => f(x, acc))
+
 
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 }
