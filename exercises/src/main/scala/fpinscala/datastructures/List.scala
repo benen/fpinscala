@@ -125,5 +125,21 @@ object List { // `List` companion object. Contains functions for creating and wo
   // reverse the list then append via fold left. will require way too many passes.
   def concat[A](ll: List[List[A]]): List[A] = foldLeft(reverse(ll), Nil: List[A])((acc, x) => appendViaFoldLeft(x, acc))
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+  /* Exercise 3.16 */
+  def addOne(l: List[Int]): List[Int] = foldRightViaLeft(l, Nil: List[Int])((x, acc) => Cons(x + 1, acc))
+
+  /* Exercise 3.17 */
+  def toString(l: List[Double]): List[String] = foldRightViaLeft(l, Nil: List[String])((x, acc) => Cons(x.toString, acc))
+
+  /* Exercise 3.18 */
+  def map[A,B](l: List[A])(f: A => B): List[B] = foldRightViaLeft(l, Nil:List[B])((x, acc) => Cons(f(x), acc))
+
+  /* Exercise 3.19 */
+  def filter[A](l: List[A])(f: A => Boolean) = foldRightViaLeft(l, Nil:List[A])((x, acc) => if (f(x)) Cons(x, acc) else acc)
+
+  /* Exercise 3.20 */
+  def flatMap[A, B](l: List[A])(f: A => List[B]) = concat(map(l)(f))
+
+  /* Exercise 3.21 */
+  def filterViaFlatMap[A](l: List[A])(f: A => Boolean) = flatMap(l)(x => if (f(x)) List(x) else Nil)
 }
