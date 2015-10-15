@@ -106,7 +106,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil: List[A]){(acc, x) => Cons(x, acc)}
 
   /* Exercise 3.13 */
-  // Builds up a chain of functions
+  // Builds up a chain of functions, not stack safe
   def foldLeftViaRight[A, B](l: List[A], z: B)(f: (B, A) => B) = {
     foldRight(l, (b: B) => b){(x, acc) =>
       (b: B) => acc(f(b, x))
@@ -115,6 +115,13 @@ object List { // `List` companion object. Contains functions for creating and wo
   // Tail recursive but requiring of two passes
   def foldRightViaLeft[A, B](l: List[A], z: B)(f: (A, B) => B) = foldLeft(reverse(l), z)((acc, x) => f(x, acc))
 
+  /* Exercise 3.14 */
+  // appends the last element of a1 with a2, then unwinds the stack prepending the elements of a1 in reverse
+  def appendViaFoldRight[A](a1: List[A], a2: List[A]): List[A] = foldRight(a1, a2)((x, acc) => Cons(x, acc))
+  // simple solution using reverse of the first list to replicate behaviour above
+  def appendViaFoldLeft[A](a1: List[A], a2: List[A]): List[A] = foldLeft(reverse(a1), a2)((acc, x) => Cons(x, acc))
+
+  /* Exercise 3.15 */
 
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 }
