@@ -122,6 +122,8 @@ object List { // `List` companion object. Contains functions for creating and wo
   def appendViaFoldLeft[A](a1: List[A], a2: List[A]): List[A] = foldLeft(reverse(a1), a2)((acc, x) => Cons(x, acc))
 
   /* Exercise 3.15 */
+  // reverse the list then append via fold left. will require way too many passes.
+  def concat[A](ll: List[List[A]]): List[A] = foldLeft(reverse(ll), Nil: List[A])((acc, x) => appendViaFoldLeft(x, acc))
 
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 }
