@@ -156,4 +156,23 @@ object List { // `List` companion object. Contains functions for creating and wo
     case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(f(x1, x2), zipWith(xs1, xs2)(f))
     case _ => Nil
   }
+
+  /* Exercise 3.24 */
+  def take[A](l: List[A], n: Int): List[A] = {
+    def go(ls: List[A], nn: Int, acc: List[A]): List[A] = ls match {
+      case Cons(x, xs) if nn > 0 => go(xs, nn - 1, Cons(x, acc))
+      case _ => reverse(acc)
+    }
+    go(l, n, Nil)
+  }
+
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    val subLength = length(sub)
+    def go(p: List[A]): Boolean = p match {
+      case Cons(x, xs) if take(p, subLength) == sub => true
+      case Cons(x, xs) => go(xs)
+      case Nil => false
+    }
+    go(sup)
+  }
 }
