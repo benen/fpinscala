@@ -65,10 +65,17 @@ object Option {
     case _ => None
   }
 
+  /* Exercise 4.4 */
   def sequence[A](a: List[Option[A]]): Option[List[A]] = a.foldRight(Some(List.empty[A]): Option[List[A]])((opt, acc) => (acc, opt) match {
     case (Some(l), Some(a)) => Some(l.+:(a))
     case _ => None
   })
 
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
+  /* Exercise 4.5 */
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a.foldRight(Some(List.empty[B]): Option[List[B]])((aa, acc) => (f(aa), acc) match {
+    case (Some(b), Some(l)) => Some(l.+:(b))
+    case _ => None
+  })
+
+  def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(a => a)
 }
