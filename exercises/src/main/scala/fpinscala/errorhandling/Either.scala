@@ -51,7 +51,7 @@ object Either {
       case Nil => Right(acc)
       case x :: xs => f(x) match {
         case Right(b) => go(acc :+ b, xs)
-        case left: Left[E] => left 
+        case left: Left[E] => left
       }
     }
     go(List[B](), es)
