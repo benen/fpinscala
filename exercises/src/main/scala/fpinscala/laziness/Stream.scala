@@ -18,14 +18,23 @@ trait Stream[+A] {
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
   }
 
+  /* Ex 5.1 */
   def toList: List[A] = this match {
     case Cons(h, t) => h() :: t().toList
     case _ => Nil
   }
 
-  def take(n: Int): Stream[A] = sys.error("todo")
+  /* Ex 5.2 i */
+  def take(n: Int): Stream[A] = this match {
+    case Cons(h, t) if n > 0 => cons(h(), t().take(n - 1))
+    case _ => Empty
+  }
 
-  def drop(n: Int): Stream[A] = sys.error("todo")
+  /* Ex 5.2 ii */
+  def drop(n: Int): Stream[A] = this match {
+    case Cons(h, t) if n > 0 => t().drop(n - 1)
+    case _ => this
+  }
 
   def takeWhile(p: A => Boolean): Stream[A] = sys.error("todo")
 
