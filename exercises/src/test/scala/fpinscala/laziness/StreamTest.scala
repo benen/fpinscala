@@ -430,15 +430,82 @@ class StreamTest extends FunSpec {
     }
   }
 
+  describe("mapViaUnfold") {
+    it("should create a new stream that has the function applied to each element") {
+      new TestStream {
+        assertResult(List(2, 4, 6))(testStream.mapViaUnfold(_ * 2).take(3).toList)
+      }
+    }
+
+    it("should only evaluate one element of the stream") {
+      new TestStream {
+        testStream.mapViaUnfold(_ + 1)
+        assertResult(1)(count)
+      }
+    }
+  }
+
+  describe("takeViaUnfold") {
+    it("should return the first n elements of a stream") {
+      new TestStream {
+        val shortStream = testStream.takeViaUnfold(3)
+
+        assertResult(3)(shortStream.take(3).toList.length)
+      }
+    }
+
+    it("should not evaluate more than one element in the stream") {
+      new TestStream {
+        val shortStream = testStream.takeViaUnfold(3)
+
+        assert(1 >= count)
+      }
+    }
+
+    it("should throw an exception if called on an empty stream") {
+      intercept[NoSuchElementException] {
+        Empty.takeViaUnfold(3)
+      }
+    }
+
+    it("should not throw an exception if called on a small stream") {
+      val testStream = Stream(1, 2, 3)
+
+      assert(testStream.takeViaUnfold(4).isInstanceOf[Stream[_]])
+    }
+  }
+
+  describe("takeWhileViaUnfold") {
+    it("should return only elements that match the predicate") {
+      new TestStream {
+        val evens = testStream.takeWhileViaUnfold(_ < 5)
+
+        assertResult(List(1, 2, 3, 4))(evens.toList)
+      }
+    }
+
+    it("should evaluate only one element in the stream") {
+      new TestStream {
+        val odds = testStream.takeWhileViaUnfold(_ % 2 != 0)
+
+        assertResult(1)(count)
+      }
+    }
+
+    it("should return an empty stream if called on an empty stream") {
+      assertResult(Empty)(Empty.takeWhileViaUnfold(_ => true))
+    }
+  }
+
   describe("zipWith") {
-    ignore("should apply a function to each corresponding element in the stream") {
+    it("should apply a function to each corresponding element in the stream") {
       val constStream = Stream.from(1)
 
       assertResult(List(2, 4, 6, 8, 10))(constStream.zipWith(constStream)(_ + _).take(5).toList)
       assertResult(List(1, 4, 9, 16, 25))(constStream.zipWith(constStream)(_ * _).take(5).toList)
     }
 
-    ignore("should terminate as soon as either stream terminates") {
+    it("should terminate as soon as either stream terminates") {
       new TestStream {
         val shortStream = Stream.from(1).take(5)
 
@@ -446,7 +513,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should lazily evaluate") {
+    it("should lazily evaluate") {
       new TestStream {
         val stream2 = Stream.from(1)
 
@@ -457,7 +524,7 @@ class StreamTest extends FunSpec {
   }
 
   describe("zipAll") {
-    ignore("should generate tuples of the values in each stream") {
+    it("should generate tuples of the values in each stream") {
       val testStream = Stream.from(1)
 
       assertResult(List(
@@ -469,7 +536,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should continue as long as either stream has values") {
+    it("should continue as long as either stream has values") {
       new TestStream {
         val threeStream = testStream.take(3)
         val fiveStream = testStream.take(5)
@@ -479,7 +546,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should lazily evaluate") {
+    it("should lazily evaluate") {
       new TestStream {
         val constStream = Stream.from(1)
         val zippedStream = testStream zipAll constStream

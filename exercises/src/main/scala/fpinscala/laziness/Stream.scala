@@ -72,9 +72,40 @@ trait Stream[+A] {
   def flatMap[B](f: A => Stream[B]): Stream[B] =
     foldRight(Empty: Stream[B])((a, b) => f(a).append(b))
 
-  def zipWith[B,C](s2: Stream[B])(f: (A,B) => C): Stream[C] = sys.error("todo")
+  /* Ex 5.13 i */
+  def mapViaUnfold[B](f: A => B): Stream[B] = Stream.unfold(this)( _ match {
+    case Cons(h, t) => Some(f(h()), t())
+    case _ => None
+  })
 
-  def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = sys.error("todo")
+  /* Ex 5.13 ii */
+  def takeViaUnfold(n: Int): Stream[A] = Stream.unfold((this, n))(_ match {
+    case (Cons(h, t), nn) if nn > 1 => Some(h(), (t(), nn - 1))
+    case (Cons(h, t), nn) if nn == 1 => Some(h(), (Empty, 0))
+    case (Empty, nn) if nn > 0 => throw new NoSuchElementException
+    case _ => None
+  })
+
+
+  /* Ex 5.13 iii */
+  def takeWhileViaUnfold(p: A => Boolean): Stream[A] = Stream.unfold(this)(_ match {
+    case Cons(h, t) if p(h()) => Some(h(), t())
+    case _ => None
+  })
+
+  /* Ex 5.13 iv */
+  def zipWith[B,C](s2: Stream[B])(f: (A,B) => C): Stream[C] = Stream.unfold(this, s2)(_ match {
+    case (Cons(h1, t1), Cons(h2, t2)) => Some(f(h1(), h2()), (t1(), t2()))
+    case _ => None
+  })
+
+  /* Ex 5.13 v */
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = Stream.unfold(this, s2)( _ match {
+    case (Cons(h1, t1), Cons(h2, t2)) => Some((Some(h1()), Some(h2())), (t1(), t2()))
+    case (Cons(h1, t1), Empty) => Some((Some(h1()), None), (t1(), Empty))
+    case (Empty, Cons(h2, t2)) => Some((None, Some(h2())), (Empty, t2()))
+    case _ => None
+  })
 
   def tails: Stream[Stream[A]] = sys.error("todo")
 
