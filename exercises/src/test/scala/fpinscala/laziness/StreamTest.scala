@@ -150,6 +150,28 @@ class StreamTest extends FunSpec {
     }
   }
 
+  describe("takeWhileViaFold") {
+    it("should return only elements that match the predicate") {
+      new TestStream {
+        val evens = testStream.takeWhileViaFold(_ < 5)
+
+        assertResult(List(1, 2, 3, 4))(evens.toList)
+      }
+    }
+
+    it("should evaluate only one element in the stream") {
+      new TestStream {
+        val odds = testStream.takeWhileViaFold(_ % 2 != 0)
+
+        assertResult(1)(count)
+      }
+    }
+
+    it("should return an empty stream if called on an empty stream") {
+      assertResult(Empty)(Empty.takeWhileViaFold(_ => true))
+    }
+  }
+
   describe("headOption") {
     ignore("should return Some() for a stream with elements") {
       new TestStream {

@@ -48,6 +48,10 @@ trait Stream[+A] {
   def forAll(p: A => Boolean): Boolean =
     foldRight(true)((a, b) => p(a) && b)
 
+  /* Ex 5.5 */
+  def takeWhileViaFold(p: A => Boolean): Stream[A] =
+    foldRight(Empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else Empty)
+
   def headOption: Option[A] = sys.error("todo")
 
   def map[B](f: A => B): Stream[B] = sys.error("todo")
