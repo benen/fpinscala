@@ -108,9 +108,16 @@ trait Stream[+A] {
   })
 
   /* Ex 5.14 */
-  def startsWith[B](s: Stream[B]): Boolean = this.zipWith(s)(_ == _).forAll(_ == true)
+  def startsWith[B](s: Stream[B]): Boolean = this.zipAll(s).takeWhile(_._2.headOption.isDefined).map {
+    case (Some(a), Some(b)) => a == b
+    case _ => false
+  }.forAll(_ == true)
 
-  def tails: Stream[Stream[A]] = sys.error("todo")
+  /* Ex 5.15 */
+  def tails: Stream[Stream[A]] = Stream.unfold(this)((s) => s match {
+    case Cons(h, t) => Some(cons(h(), t()), t())
+    case Empty => None
+  }).append(Stream(Empty)) // we always have the empty list
 
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = sys.error("todo")
 }

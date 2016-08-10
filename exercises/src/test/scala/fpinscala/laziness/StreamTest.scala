@@ -585,7 +585,7 @@ class StreamTest extends FunSpec {
   }
 
   describe("tails") {
-    ignore("should return successive tails of a stream") {
+    it("should return successive tails of a stream") {
       val testStream = Stream(1, 2, 3, 4, 5)
 
       assertResult(List(List(1, 2, 3, 4, 5), List(2, 3, 4, 5), List(3, 4, 5), List(4, 5), List(5), Nil)) {
@@ -593,7 +593,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should operate on infinite streams") {
+    it("should operate on infinite streams") {
       new TestStream {
         val tails = testStream.tails
 
