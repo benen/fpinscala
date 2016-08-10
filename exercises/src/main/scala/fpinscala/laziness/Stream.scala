@@ -109,7 +109,13 @@ object Stream {
   /* Ex 5.9 */
   def from(n: Int): Stream[Int] = cons(n, from(n + 1))
 
-  lazy val fibs: Stream[Int] = sys.error("todo")
+  /* Ex 5.10 */
+  lazy val fibs: Stream[Int] = {
+    def go(prev: Int, curr: Int): Stream[Int] = {
+      cons(prev, go(curr, curr + prev))
+    }
+    go(0, 1)
+  }
 
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
 

@@ -329,11 +329,11 @@ class StreamTest extends FunSpec {
   }
 
   describe("fibs") {
-    ignore("should produce the fibonacci sequence") {
+    it("should produce the fibonacci sequence") {
       assertResult(List(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610))(Stream.fibs.take(16).toList)
     }
 
-    ignore("should produce an infinite stream") {
+    it("should produce an infinite stream") {
       intercept[StackOverflowError] {
         Stream.fibs.toList
       }
