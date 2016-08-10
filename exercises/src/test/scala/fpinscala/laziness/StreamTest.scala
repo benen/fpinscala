@@ -307,13 +307,13 @@ class StreamTest extends FunSpec {
   }
 
   describe("from") {
-    ignore("should start at the integer specified") {
+    it("should start at the integer specified") {
       val fromSix = Stream.from(6)
 
       assert(fromSix.headOption.get == 6)
     }
 
-    ignore("should produce an infinite stream") {
+    it("should produce an infinite stream") {
       val fromTwelve = Stream.from(12)
 
       intercept[StackOverflowError] {
@@ -321,7 +321,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should increase by one at each index") {
+    it("should increase by one at each index") {
       val fromNegativeFour = Stream.from(-4)
 
       assertResult(List(-4, -3, -2, -1, 0, 1, 2, 3, 4))(fromNegativeFour.take(9).toList)
