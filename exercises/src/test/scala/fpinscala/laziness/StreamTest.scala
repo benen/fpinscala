@@ -360,6 +360,76 @@ class StreamTest extends FunSpec {
     }
   }
 
+  describe("onesViaUnfold") {
+    it("should be an infinite stream of ones") {
+      assert(Stream.onesViaUnfold.take(1000).forAll(_ == 1))
+      intercept[StackOverflowError] {
+        Stream.onesViaUnfold.toList
+      }
+    }
+  }
+
+  describe("constantViaUnfold") {
+    it("should create a stream that repeats the same element") {
+      val constStream = Stream.constantViaUnfold(1)
+
+      assert(constStream.take(1000).forAll(_ == 1))
+    }
+
+    it("should work for any type") {
+      val intStream = Stream.constantViaUnfold(7)
+      val charStream = Stream.constantViaUnfold('f')
+      val stringStream = Stream.constantViaUnfold("foobar")
+      val doubleStream = Stream.constantViaUnfold(Math.PI)
+
+      assert(intStream.take(1).headOption.get.isInstanceOf[Int])
+      assert(intStream.take(1000).forAll(_ == 7))
+
+      assert(charStream.take(1).headOption.get.isInstanceOf[Char])
+      assert(charStream.take(1000).forAll(_ == 'f'))
+
+      assert(stringStream.take(1).headOption.get.isInstanceOf[String])
+      assert(stringStream.take(1000).forAll(_ == "foobar"))
+
+      assert(doubleStream.take(1).headOption.get.isInstanceOf[Double])
+      assert(doubleStream.take(1000).forAll(_ == Math.PI))
+    }
+  }
+
+  describe("fromViaUnfold") {
+    it("should start at the integer specified") {
+      val fromSix = Stream.fromViaUnfold(6)
+
+      assert(fromSix.headOption.get == 6)
+    }
+
+    it("should produce an infinite stream") {
+      val fromTwelve = Stream.fromViaUnfold(12)
+
+      intercept[StackOverflowError] {
+        fromTwelve.toList
+      }
+    }
+
+    it("should increase by one at each index") {
+      val fromNegativeFour = Stream.fromViaUnfold(-4)
+
+      assertResult(List(-4, -3, -2, -1, 0, 1, 2, 3, 4))(fromNegativeFour.take(9).toList)
+    }
+  }
+
+  describe("fibsViaUnfold") {
+    it("should produce the fibonacci sequence") {
+      assertResult(List(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610))(Stream.fibsViaUnfold.take(16).toList)
+    }
+
+    it("should produce an infinite stream") {
+      intercept[StackOverflowError] {
+        Stream.fibsViaUnfold.toList
+      }
+    }
+  }
+
   describe("zipWith") {
     ignore("should apply a function to each corresponding element in the stream") {
       val constStream = Stream.from(1)

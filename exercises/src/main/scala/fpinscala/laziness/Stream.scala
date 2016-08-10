@@ -122,4 +122,22 @@ object Stream {
     case Some((a, sn)) => cons(a, unfold(sn)(f))
     case None => Empty
   }
+
+  /* Ex 5.12 i */
+  val onesViaUnfold: Stream[Int] =
+    unfold(1)((s) => Some(s, s))
+
+  /* Ex 5.12 ii */
+  def constantViaUnfold[A](a: A): Stream[A] =
+    unfold(a)((s) => Some(s, s))
+
+  /* Ex 5.12 iii */
+  def fromViaUnfold(n: Int): Stream[Int] =
+    unfold(n)((s) => Some(s, s + 1))
+
+  /* Ex 5.12 iv */
+  lazy val fibsViaUnfold: Stream[Int] = {
+    unfold((0, 1)){ case (prev, curr) => Some(prev, (curr, prev + curr)) }
+  }
+
 }
