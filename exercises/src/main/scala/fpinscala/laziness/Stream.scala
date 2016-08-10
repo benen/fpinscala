@@ -117,7 +117,9 @@ object Stream {
     go(0, 1)
   }
 
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
-
-
+  /* Ex 5.11 */
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case Some((a, sn)) => cons(a, unfold(sn)(f))
+    case None => Empty
+  }
 }

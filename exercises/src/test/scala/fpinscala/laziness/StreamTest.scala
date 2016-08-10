@@ -341,7 +341,7 @@ class StreamTest extends FunSpec {
   }
 
   describe("unfold") {
-    ignore("should be able to produce an infinite stream from a state and a function") {
+    it("should be able to produce an infinite stream from a state and a function") {
       val fibs = Stream.unfold((0,1)) {
         case (first, second) => Some((first, (second, first + second)))
       }
@@ -352,7 +352,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should be able to produce a finite stream if the function returns None") {
+    it("should be able to produce a finite stream if the function returns None") {
       val oneToTen = Stream.unfold(1) { n =>
         if (n <= 10) Some((n, n + 1))
         else None
