@@ -130,19 +130,19 @@ class StreamTest extends FunSpec {
   }
 
   describe("forAll") {
-    ignore("should return true if the predicate is true for all elements") {
+    it("should return true if the predicate is true for all elements") {
       val testStream = Stream(1, 2, 3)
 
       assertResult(true)(testStream.forAll(_ < 5))
     }
 
-    ignore("should return false if the predicate is false for any element") {
+    it("should return false if the predicate is false for any element") {
       val testStream = Stream(1, 2, 3)
 
       assertResult(false)(testStream.forAll(_ != 3))
     }
 
-    ignore("should only evaluate elements until one fails the predicate") {
+    it("should only evaluate elements until one fails the predicate") {
       new TestStream {
         assertResult(false)(testStream.forAll(_ < 5))
         assertResult(5)(count)
