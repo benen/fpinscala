@@ -271,7 +271,7 @@ class StreamTest extends FunSpec {
   }
 
   describe("ones") {
-    ignore("should be an infinite stream of ones") {
+    it("should be an infinite stream of ones") {
       assert(Stream.ones.take(1000).forAll(_ == 1))
       intercept[StackOverflowError] {
         Stream.ones.toList
@@ -280,13 +280,13 @@ class StreamTest extends FunSpec {
   }
 
   describe("constant") {
-    ignore("should create a stream that repeats the same element") {
+    it("should create a stream that repeats the same element") {
       val constStream = Stream.constant(1)
 
       assert(constStream.take(1000).forAll(_ == 1))
     }
 
-    ignore("should work for any type") {
+    it("should work for any type") {
       val intStream = Stream.constant(7)
       val charStream = Stream.constant('f')
       val stringStream = Stream.constant("foobar")
