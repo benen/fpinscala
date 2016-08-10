@@ -56,13 +56,21 @@ trait Stream[+A] {
   def headOption: Option[A] =
     foldRight(None: Option[A])((a, b) => Some(a))
 
-  def map[B](f: A => B): Stream[B] = sys.error("todo")
+  /* Ex 5.7 i */
+  def map[B](f: A => B): Stream[B] =
+    foldRight(Empty: Stream[B])((a, b) => cons(f(a), b))
 
-  def filter(p: A => Boolean): Stream[A] = sys.error("todo")
+  /* Ex 5.7 ii */
+  def filter(p: A => Boolean): Stream[A] =
+    foldRight(Empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else b)
 
-  def append[B >: A](that: => Stream[B]): Stream[B] = sys.error("todo")
+  /* Ex 5.7 iii */
+  def append[B >: A](that: => Stream[B]): Stream[B] =
+    foldRight(that: Stream[B])((a, b) => cons(a, b))
 
-  def flatMap[B](f: A => Stream[B]): Stream[B] = sys.error("todo")
+  /* Ex 5.7 iv */
+  def flatMap[B](f: A => Stream[B]): Stream[B] =
+    foldRight(Empty: Stream[B])((a, b) => f(a).append(b))
 
   def zipWith[B,C](s2: Stream[B])(f: (A,B) => C): Stream[C] = sys.error("todo")
 

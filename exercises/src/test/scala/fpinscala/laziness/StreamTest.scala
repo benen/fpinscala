@@ -193,13 +193,13 @@ class StreamTest extends FunSpec {
   }
 
   describe("map") {
-    ignore("should create a new stream that has the function applied to each element") {
+    it("should create a new stream that has the function applied to each element") {
       new TestStream {
         assertResult(List(2, 4, 6))(testStream.map(_ * 2).take(3).toList)
       }
     }
 
-    ignore("should only evaluate one element of the stream") {
+    it("should only evaluate one element of the stream") {
       new TestStream {
         testStream.map(_ + 1)
         assertResult(1)(count)
@@ -208,19 +208,19 @@ class StreamTest extends FunSpec {
   }
 
   describe("filter") {
-    ignore("should create a new stream containing only those elements that match the predicate") {
+    it("should create a new stream containing only those elements that match the predicate") {
       new TestStream {
         assertResult(List(1, 2, 3, 4))(testStream.take(100).filter(_ < 5).toList)
       }
     }
 
-    ignore("should be able to return disjoint parts of a stream") {
+    it("should be able to return disjoint parts of a stream") {
       new TestStream {
         assertResult(List(2, 4, 6, 8, 10))(testStream.filter(_ % 2 == 0).take(5).toList)
       }
     }
 
-    ignore("should only evaluate one element of the stream") {
+    it("should only evaluate one element of the stream") {
       new TestStream {
         testStream.filter(_ > 0)
         assertResult(1)(count)
@@ -229,14 +229,14 @@ class StreamTest extends FunSpec {
   }
 
   describe("append") {
-    ignore("should create a new stream out of the two given streams") {
+    it("should create a new stream out of the two given streams") {
       val stream1 = Stream(1)
       val stream2 = Stream(2, 3)
 
       assertResult(List(1, 2, 3))(stream1.append(stream2).toList)
     }
 
-    ignore("should only evaluate one element of the stream") {
+    it("should only evaluate one element of the stream") {
       new TestStream {
         val newStream = testStream.append(testStream)
 
@@ -244,7 +244,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should work for empty streams") {
+    it("should work for empty streams") {
       val fullStream = Stream(1, 2, 3)
 
       assertResult(List(1, 2, 3))(fullStream.append(Empty).toList)
@@ -253,7 +253,7 @@ class StreamTest extends FunSpec {
   }
 
   describe("flatMap") {
-    ignore("should create a new stream by applying the given function and flattening the results") {
+    it("should create a new stream by applying the given function and flattening the results") {
       new TestStream {
         val newStream = testStream.flatMap(n => Stream(n, n))
 
@@ -261,7 +261,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should only evaluate one element of the stream") {
+    it("should only evaluate one element of the stream") {
       new TestStream {
         val newStream = testStream.flatMap(n => Stream(n.toString))
 
