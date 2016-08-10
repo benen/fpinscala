@@ -557,7 +557,7 @@ class StreamTest extends FunSpec {
   }
 
   describe("startsWith") {
-    ignore("should return true if and only if this stream exactly matches another at the start") {
+    it("should return true if and only if this stream exactly matches another at the start") {
       new TestStream {
         val matchingStream = Stream.from(1).take(1000)
         val mismatchingStream = Stream(1, 2, 3, 4, 5, 6, 7, 8, 9, 0)
@@ -567,7 +567,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should evaluate only what it needs to to determine the result") {
+    it("should evaluate only what it needs to to determine the result") {
       new TestStream {
         val other = Stream(1, 2, 3, 4, 6)
 
@@ -576,7 +576,7 @@ class StreamTest extends FunSpec {
       }
     }
 
-    ignore("should not be bidirectional") {
+    it("should not be bidirectional") {
       new TestStream {
         val mismatchingStream = Stream(1, 2, 3, 4, 5, 6, 7, 8, 9)
         assertResult(false)(mismatchingStream startsWith testStream.take(10))

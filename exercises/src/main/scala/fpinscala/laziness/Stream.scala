@@ -107,14 +107,12 @@ trait Stream[+A] {
     case _ => None
   })
 
+  /* Ex 5.14 */
+  def startsWith[B](s: Stream[B]): Boolean = this.zipWith(s)(_ == _).forAll(_ == true)
+
   def tails: Stream[Stream[A]] = sys.error("todo")
 
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = sys.error("todo")
-
-  // 5.7 map, filter, append, flatmap using foldRight. Part of the exercise is
-  // writing your own function signatures.
-
-  def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
