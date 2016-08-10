@@ -173,17 +173,17 @@ class StreamTest extends FunSpec {
   }
 
   describe("headOption") {
-    ignore("should return Some() for a stream with elements") {
+    it("should return Some() for a stream with elements") {
       new TestStream {
         assertResult(Some(1))(testStream.headOption)
       }
     }
 
-    ignore("should return None for a stream with no elements") {
+    it("should return None for a stream with no elements") {
       assertResult(None)(Empty.headOption)
     }
 
-    ignore("should only evaluate one element of the stream") {
+    it("should only evaluate one element of the stream") {
       new TestStream {
         val _ = testStream.headOption
 

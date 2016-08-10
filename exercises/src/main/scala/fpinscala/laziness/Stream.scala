@@ -52,7 +52,9 @@ trait Stream[+A] {
   def takeWhileViaFold(p: A => Boolean): Stream[A] =
     foldRight(Empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else Empty)
 
-  def headOption: Option[A] = sys.error("todo")
+  /* Ex 5.6 */
+  def headOption: Option[A] =
+    foldRight(None: Option[A])((a, b) => Some(a))
 
   def map[B](f: A => B): Stream[B] = sys.error("todo")
 
