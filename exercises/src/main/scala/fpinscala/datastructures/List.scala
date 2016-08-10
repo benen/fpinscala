@@ -51,14 +51,15 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   /* Exercise 3.2 */
   def tail[A](l: List[A]): List[A] = l match {
+    case Cons(x, Nil) => Nil
     case Cons(x, xs) => xs
-    case Nil => Nil
+    case Nil => throw new RuntimeException("List is empty")
   }
 
   /* Exercise 3.3 */
   def setHead[A](l: List[A], h: A): List[A] = l match {
     case Cons(x, xs) => Cons(h, xs)
-    case Nil => Cons(h, Nil)
+    case Nil => throw new RuntimeException("List is empty")
   }
 
   /* Exercise 3.4 */
@@ -79,7 +80,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   def init[A](l: List[A]): List[A] = l match {
     case Cons(x, Nil) => Nil
     case Cons(x, xs) => Cons(x, init(xs))
-    case Nil => Nil
+    case Nil => throw new RuntimeException("List is empty")
   }
 
   /* Exercise 3.7 */
@@ -98,9 +99,9 @@ object List { // `List` companion object. Contains functions for creating and wo
   }
 
   /* Exercise 3.11 */
-  def sumLeft(l: List[Double]): Double = foldLeft(l, 0.0)(_ + _)
-  def prodLeft(l: List[Double]): Double = foldLeft(l, 1.0)(_ * _)
-  def lenLeft[A](l: List[A]): Int = foldLeft(l, 0)((acc, x) => acc + 1)
+  def sumViaFoldLeft(l: List[Int]): Int = foldLeft(l, 0)(_ + _)
+  def productViaFoldLeft(l: List[Double]): Double = foldLeft(l, 1.0)(_ * _)
+  def lengthViaFoldLeft[A](l: List[A]): Int = foldLeft(l, 0)((acc, x) => acc + 1)
 
   /* Exercise 3.12 */
   def reverse[A](l: List[A]): List[A] = foldLeft(l, Nil: List[A]){(acc, x) => Cons(x, acc)}
@@ -129,7 +130,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   def addOne(l: List[Int]): List[Int] = foldRightViaLeft(l, Nil: List[Int])((x, acc) => Cons(x + 1, acc))
 
   /* Exercise 3.17 */
-  def toString(l: List[Double]): List[String] = foldRightViaLeft(l, Nil: List[String])((x, acc) => Cons(x.toString, acc))
+  def doubleToString(l: List[Double]): List[String] = foldRightViaLeft(l, Nil: List[String])((x, acc) => Cons(x.toString, acc))
 
   /* Exercise 3.18 */
   def map[A,B](l: List[A])(f: A => B): List[B] = foldRightViaLeft(l, Nil:List[B])((x, acc) => Cons(f(x), acc))
@@ -144,11 +145,10 @@ object List { // `List` companion object. Contains functions for creating and wo
   def filterViaFlatMap[A](l: List[A])(f: A => Boolean) = flatMap(l)(x => if (f(x)) List(x) else Nil)
 
   /* Exercise 3.22 */
-  def add(l1: List[Int], l2: List[Int]): List[Int] = (l1, l2) match {
-    case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(x1 + x2, add(xs1, xs2))
-    case (Cons(x1, xs1), Nil) => Cons(x1, add(xs1, Nil))
-    case (Nil, Cons(x2, xs2)) => Cons(x2, add(Nil, xs2))
-    case (Nil, Nil) => Nil
+  def addPairwise(l1: List[Int], l2: List[Int]): List[Int] = (l1, l2) match {
+    case (Cons(x1, xs1), Cons(x2, xs2)) => Cons(x1 + x2, addPairwise(xs1, xs2))
+    case (Nil, _) => Nil
+    case (_, Nil) => Nil
   }
 
   /* Exercise 3.23 */

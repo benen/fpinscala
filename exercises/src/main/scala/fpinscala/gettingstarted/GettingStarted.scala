@@ -149,12 +149,17 @@ object PolymorphicFunctions {
   // an `Array[A]` is sorted
   @annotation.tailrec
   def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = {
-    if (as.length > 1 && gt(as(0), as(1)))
-      isSorted(as.tail, gt)
-    else if (as.length == 1)
+    if (as.length <= 1) {
       true
-    else
-      false
+    }
+    else {
+      if (gt(as(1), as(0))) {
+        isSorted(as.tail, gt)
+      }
+      else {
+        false
+      }
+    }
   }
 
   // Polymorphic functions are often so constrained by their type

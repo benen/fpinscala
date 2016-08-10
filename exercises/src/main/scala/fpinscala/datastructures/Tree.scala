@@ -41,5 +41,4 @@ object Tree {
   def maximumViaFold(tree: Tree[Int]): Int = fold(tree)(x => x)(_ max _)
   def depthViaFold[A](tree: Tree[A]): Int = fold(tree)(a => 0)((b1, b2) => 1 + (b1 max b2))
   def mapViaFold[A, B](tree: Tree[A])(f: A => B): Tree[B] = fold(tree) { (a) => Leaf(f(a)): Tree[B] } { (b1, b2) => Branch(b1, b2) }
-
 }

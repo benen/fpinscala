@@ -49,7 +49,7 @@ trait Stream[+A] {
     foldRight(true)((a, b) => p(a) && b)
 
   /* Ex 5.5 */
-  def takeWhileViaFold(p: A => Boolean): Stream[A] =
+  def takeWhileViaFoldRight(p: A => Boolean): Stream[A] =
     foldRight(Empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else Empty)
 
   /* Ex 5.6 */
@@ -176,5 +176,4 @@ object Stream {
   lazy val fibsViaUnfold: Stream[Int] = {
     unfold((0, 1)){ case (prev, curr) => Some(prev, (curr, prev + curr)) }
   }
-
 }
