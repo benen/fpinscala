@@ -119,7 +119,8 @@ trait Stream[+A] {
     case Empty => None
   }).append(Stream(Empty)) // we always have the empty list
 
-  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = sys.error("todo")
+  /* Ex 5.16 */
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = this.tails.map(_.foldRight(z)(f)) // not constant time
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]

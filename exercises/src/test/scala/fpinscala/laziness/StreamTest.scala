@@ -603,13 +603,13 @@ class StreamTest extends FunSpec {
   }
 
   describe("scanRight") {
-    ignore("should give a list of all intermediate results of applying a function to a Stream") {
+    it("should give a list of all intermediate results of applying a function to a Stream") {
       val shortStream = Stream(1, 2, 3, 4, 5)
 
       assertResult(List(15, 14, 12, 9, 5, 0))(shortStream.scanRight(0)(_ + _).toList)
     }
 
-    ignore("should work on infinite streams, so long as the intermediate results terminate") {
+    it("should work on infinite streams, so long as the intermediate results terminate") {
       val stream = Stream.from(1)
 
       assertResult(List(false, false, false))(stream.scanRight(true)(_ > 5 && _).take(3).toList)
