@@ -163,5 +163,12 @@ object State {
     }
   })
 
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+  /* Ex 6.11 */
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = State { machine => {
+    val result = inputs.foldLeft(machine)((m, i) => i match {
+      case Coin => if (m.locked && m.candies > 0) m.copy(locked = false, coins = m.coins + 1) else m
+      case Turn => if (!m.locked && m.candies > 0) m.copy(locked = true, candies = m.candies - 1) else m
+    })
+    ((result.coins, result.candies), result)
+  }}
 }
