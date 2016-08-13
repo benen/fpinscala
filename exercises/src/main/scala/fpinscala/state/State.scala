@@ -98,9 +98,20 @@ object RNG {
   def intsViaSequence(count: Int): Rand[List[Int]] =
       sequence(List.fill(count)(int))
 
-  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = ???
+  /* Ex 6.8 i */
+  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = rng => {
+    val (a, r1) = f(rng)
+    g(a)(r1)
+  }
 
-  def nonNegativeLessThan(n: Int): Rand[Int] = ???
+  /* Ex 6.8 ii */
+  def nonNegativeLessThan(n: Int): Rand[Int] = flatMap(nonNegativeInt){ i =>
+    val mod = i % n
+    if (i + (n - 1) - mod >= 0)
+      (mod, _)
+    else
+      nonNegativeLessThan(n)
+  }
 
   def mapViaFlatMap[A,B](s: Rand[A])(f: A => B): Rand[B] = ???
 
