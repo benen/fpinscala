@@ -63,7 +63,18 @@ object RNG {
     ((d1, d2, d3), r3)
   }
 
-  def ints(count: Int)(rng: RNG): (List[Int], RNG) = ???
+  /* Ex 6.4 */
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+    @annotation.tailrec
+    def go(acc: List[Int], n: Int, r: RNG): (List[Int], RNG) = {
+      val (i, r1) = r.nextInt
+      if (n > 1)
+        go(acc :+ i, n - 1, r1)
+      else
+        (acc :+ i, r1)
+    }
+    if (count > 0) go(List(), count, rng) else (List(), rng)
+  }
 
   def doubleViaMap: Rand[Double] = ???
 
