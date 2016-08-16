@@ -52,9 +52,13 @@ object Par {
   def sortPar(parList: Par[List[Int]]) = map(parList)(_.sorted)
 
   /* Ex 7.5 */
-  def sequence[A](as: List[Par[A]]): Par[List[A]] = as.foldLeft(unit(List[A]()))((acc, a) => map2(acc, a)(_ :+ _))
+  def sequence[A](as: List[Par[A]]): Par[List[A]] =
+    as.foldLeft(unit(List[A]()))((acc, a) => map2(acc, a)(_ :+ _))
 
-  def parFilter[A](l: List[A])(f: A => Boolean): Par[List[A]] = ???
+  /* Ex 7.6 */
+  def parFilter[A](l: List[A])(f: A => Boolean): Par[List[A]] = {
+    l.foldLeft(unit(List[A]()))((acc, a) => map2(acc, lazyUnit(a))((x, y) => if (f(y)) x :+ y else x))
+  }
 
   def equal[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean = 
     p(e).get == p2(e).get
