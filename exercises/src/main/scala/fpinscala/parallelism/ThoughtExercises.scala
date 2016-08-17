@@ -36,4 +36,10 @@ object ThoughtExercises {
   /* Exercise 7.8 */
   // Our fork won't work with Single Threadpool. Indeed, to make our laws hold given a fixed thread pool we need to
   // implement fork in such a way that all threads are guaranteed to complete... without exception!
+
+  /* Exercise 7.9 */
+  // Can we derive this from the free theorem law? In otherwords, if map(map(y)(f))(f) were to be applied using
+  // f = lazyUnit(_), any combination of applications will be expected to yield the same result. So we can apply it
+  // indefinitely. However, if we have a fixed threadpool of size n the nth application of lazy unit will then always
+  // deadlock. 
 }
