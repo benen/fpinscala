@@ -33,5 +33,7 @@ object ThoughtExercises {
   map(map(y)(g))(f) ==  map(y)(g compose f)
   // ???
 
-
+  /* Exercise 7.8 */
+  // Our fork won't work with Single Threadpool. Indeed, to make our laws hold given a fixed thread pool we need to
+  // implement fork in such a way that all threads are guaranteed to complete... without exception!
 }
