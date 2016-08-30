@@ -24,7 +24,7 @@ object ThoughtExercises {
   val y1 = 0
   def f: Int => Int = _ + 1
   def g: Int => Int = _ + 10
-  def id: Int => Int = _
+  def id: Int => Int = a => a
   map(y)(id) == y
   map(map(y)(id))(id) == map(y)(id)
   map(y)(f) == f(y1) // look at return types
@@ -41,5 +41,5 @@ object ThoughtExercises {
   // Can we derive this from the free theorem law? In otherwords, if map(map(y)(f))(f) were to be applied using
   // f = lazyUnit(_), any combination of applications will be expected to yield the same result. So we can apply it
   // indefinitely. However, if we have a fixed threadpool of size n the nth application of lazy unit will then always
-  // deadlock. 
+  // deadlock.
 }

@@ -71,9 +71,15 @@ object Par {
       if (run(es)(cond).get) t(es) // Notice we are blocking on the result of `cond`.
       else f(es)
 
-  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
+  /* Ex 7.11 i */
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
+    es =>
+      choices(run(es)(n).get())(es)
 
-  def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] = ???
+  /* Ex 7.11 ii */
+  def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
+    choiceN(map(a)(res => if(res) 0 else 1 ))(List(ifTrue, ifFalse))
+
 
   def choiceMap[K,V](key: Par[K])(choices: Map[K,Par[V]]): Par[V] = ???
 
