@@ -80,8 +80,9 @@ object Par {
   def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
     choiceN(map(a)(res => if(res) 0 else 1 ))(List(ifTrue, ifFalse))
 
-
-  def choiceMap[K,V](key: Par[K])(choices: Map[K,Par[V]]): Par[V] = ???
+  /* Ex 7.12 */
+  def choiceMap[K,V](key: Par[K])(choices: Map[K,Par[V]]): Par[V] =
+    es => choices(run(es)(key).get())(es)
 
   def chooser[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] = ???
 
