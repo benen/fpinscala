@@ -83,11 +83,23 @@ object ListProps {
 }
 
 object Gen {
+
+  /* Ex 8.4 */
+  def choose(start: Int, stopExclusive: Int): Gen[Int] = Gen( State { rng =>
+    val (rand, rng1) = rng.nextInt
+    val range = stopExclusive - start
+    (Math.abs(rand % range) + start, rng1)
+  })
+
+  /* Ex 8.5 i */
   def unit[A](a: => A): Gen[A] = ???
 
-  def choose(start: Int, stopExclusive: Int): Gen[Int] = ???
-
+  /* Ex 8.5 ii */
   def boolean: Gen[Boolean] = ???
+
+  /* Ex 8.5 iii */
+  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = ???
+
 
   def double: Gen[Double] =
     Gen(State(RNG.double))
@@ -98,8 +110,6 @@ object Gen {
         b <- Gen.boolean
         a <- gen
       } yield if (b) Some(a) else None
-
-  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = ???
 
   def stringN(n: Int): Gen[String] = ???
 
