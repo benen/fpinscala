@@ -120,7 +120,12 @@ object Gen {
 
   def stringN(n: Int): Gen[String] = ???
 
-  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = ???
+  /* Ex 8.7 */
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
+    for {
+      s <- Gen.boolean
+      r <- if (s) g1 else g2
+    } yield r
 
   def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = ???
 
