@@ -132,17 +132,24 @@ object Gen {
 }
 
 case class Gen[+A](sample: State[RNG,A]) {
-  def map[B](f: A => B): Gen[B] = ???
 
-  def flatMap[B](f: A => Gen[B]): Gen[B] = ???
+  /* Ex 8.6 i */
+  def map[B](f: A => B): Gen[B] = Gen(State{ rng0 =>
+    val (a, rng1) = sample.run(rng0)
+    (f(a), rng1)
+  })
+
+  /* Ex 8.6 ii */
+  def flatMap[B](f: A => Gen[B]): Gen[B] =
+    Gen(sample.flatMap(f(_).sample))
+
+  /* Ex 8.6 iii */
+  def listOfN(size: Gen[Int]): Gen[List[A]] =
+    size.flatMap(Gen.listOfN(_, this))
 
   def map2[B,C](g: Gen[B])(f: (A,B) => C): Gen[C] =
     Gen(sample.map2(g.sample)(f))
 
-  def listOfN(size: Int): Gen[List[A]] = ???
-
-  def listOfN(size: Gen[Int]): Gen[List[A]] =
-    size flatMap (Gen.listOfN(_, this))
 
   def listOf: SGen[List[A]] = Gen.listOf(this)
 
