@@ -127,7 +127,15 @@ object Gen {
       r <- if (s) g1 else g2
     } yield r
 
-  def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = ???
+  /* Ex 8.8 */
+  def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = {
+    val sum = g1._2 + g2._2
+    for {
+      s <- Gen.double
+      gg1 <- g1._1
+      gg2 <- g2._1
+    } yield if ((s * sum) <= g1._2) gg1 else gg2
+  }
 
   def listOf[A](g: Gen[A]): SGen[List[A]] = ???
 
