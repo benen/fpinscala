@@ -190,11 +190,19 @@ case class Gen[+A](sample: State[RNG,A]) {
 }
 
 case class SGen[+A](forSize: Int => Gen[A]) {
-  def apply(n: Int): Gen[A] = ???
 
-  def map[B](f: A => B): SGen[B] = ???
+  /* Ex 8.11 i */
+  def apply(n: Int): Gen[A] = forSize(n)
 
-  def flatMap[B](f: A => SGen[B]): SGen[B] = ???
+  /* Ex 8.11 ii */
+  def map[B](f: A => B): SGen[B] = SGen { n => forSize(n).map(f) }
 
-  def **[B](s2: SGen[B]): SGen[(A,B)] = ???
+  /* Ex 8.11 iii */
+  def flatMap[B](f: A => SGen[B]): SGen[B] = {
+    val fs: Int => Gen[B] = (n) => forSize(n).flatMap(f(_).forSize(n))
+    SGen(fs)
+  }
+
+  /* Ex 8.11 iv */
+  def **[B](s2: SGen[B]): SGen[(A,B)] = SGen { (n) => forSize(n) ** s2.forSize(n) }
 }
