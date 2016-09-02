@@ -32,14 +32,28 @@ trait Prop1 { self =>
 }
 
 case class Prop(run: (TestCases,RNG) => Result) {
-  def &&(p: Prop): Prop = ???
+  /* Ex 8.9 i */
+  def &&(p: Prop): Prop = Prop { (n, rng) =>
+    val r1 = run(n, rng)
+    if (r1.isFalsified)
+      r1
+    else {
+      p.run(n, rng)
+    }
+  }
 
-  def ||(p: Prop): Prop = ???
-
-  def tag(msg: String) = Prop { (tc,rng) =>
-    run(tc, rng) match {
-      case Falsified(e, c) => Falsified(msg + "\n" + e, c)
-      case x => x
+  /* Ex 8.9 ii */
+  def ||(p: Prop): Prop = Prop { (n, rng) =>
+    run(n, rng) match {
+      case Passed => Passed
+      case Falsified(f, s) => p.tag(f).run(n, rng)
+    }
+  }
+  
+  def tag(m: String): Prop = Prop { (n, rng) =>
+    run(n, rng) match {
+      case Passed => Passed
+      case Falsified(f, s) => Falsified(s"$m\n$f", s)
     }
   }
 }
