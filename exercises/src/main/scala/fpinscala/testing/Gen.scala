@@ -49,7 +49,7 @@ case class Prop(run: (TestCases,RNG) => Result) {
       case Falsified(f, s) => p.tag(f).run(n, rng)
     }
   }
-  
+
   def tag(m: String): Prop = Prop { (n, rng) =>
     run(n, rng) match {
       case Passed => Passed
@@ -185,7 +185,8 @@ case class Gen[+A](sample: State[RNG,A]) {
   def **[B](g: Gen[B]): Gen[(A,B)] =
     (this map2 g)((_,_))
 
-  def unsized: SGen[A] = ???
+  /* Ex 8.10 */
+  def unsized: SGen[A] = SGen { (n) => this }
 }
 
 case class SGen[+A](forSize: Int => Gen[A]) {
