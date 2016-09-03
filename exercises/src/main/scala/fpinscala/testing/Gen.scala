@@ -31,7 +31,7 @@ trait Prop1 { self =>
     }
 }
 
-case class Prop(run: (MaxSize, TestCases,RNG) => Result) {
+case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   /* Ex 8.9 i */
   def &&(p: Prop): Prop = Prop { (m, n, rng) =>
     val r1 = run(n, n, rng)
@@ -45,15 +45,15 @@ case class Prop(run: (MaxSize, TestCases,RNG) => Result) {
   /* Ex 8.9 ii */
   def ||(p: Prop): Prop = Prop { (m, n, rng) =>
     run(m, n, rng) match {
-      case Passed => Passed
       case Falsified(f, s) => p.tag(f).run(m, n, rng)
+      case success: Result => success
     }
   }
 
-  def tag(m: String): Prop = Prop { (m, n, rng) =>
-    run(m, n, rng) match {
-      case Passed => Passed
+  def tag(m: String): Prop = Prop { (max, n, rng) =>
+    run(max, n, rng) match {
       case Falsified(f, s) => Falsified(s"$m\n$f", s)
+      case success: Result => success
     }
   }
 }
@@ -74,6 +74,9 @@ object Prop {
     successes: SuccessCount) extends Result {
     def isFalsified = true
   }
+  case object Proved extends Result {
+    override def isFalsified: Boolean = false
+  }
 
   def forAll[A](g: Gen[A])(f: A => Boolean): Prop = Prop {
     (max, n, rng) => randomStream(g)(rng).zip(Stream.from(0)).take(n).map {
@@ -93,6 +96,10 @@ object Prop {
         p.run(max, casesPerSize, rng)
       }).toList.reduce(_ && _)
       prop.run(max, n, rng)
+  }
+
+  def check(p: => Boolean): Prop = Prop { (_, _, _) =>
+    if (p) Proved else Falsified("()", 0)
   }
 
   private def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] =
@@ -129,6 +136,26 @@ object ListProps {
     val p2: Prop = ???
     p1 && p2
   }
+}
+
+object ParProps {
+  val S = weighted(
+    choose(1, 4).map(Executors.newFixedThreadPool) -> 0.75,
+    unit(Executors.newCachedThreadPool) -> 0.25)
+
+  def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
+    Prop.forAll(S ** g){ case s ** a  => f(a)(s).get }
+
+  def equal[A](p1: Par[A], p2: Par[A]): Par[Boolean] =
+    Par.map2(p1, p2)(_ == _)
+
+  def checkPar[A](p: => Par[Boolean]): Prop = Prop { (_, _, _) =>
+    val result = p(Executors.newCachedThreadPool).get
+    if (result) Proved else Falsified("()", 0)
+  }
+
+  /* Ex 8.17 */
+  lazy val fork: Prop = checkPar { Par.map2(Par.fork(Par.unit(1)), Par.unit(1))(_ == _) }
 }
 
 object Gen {
@@ -194,7 +221,14 @@ object Gen {
   /* Ex 8.13 */
   def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen { n => Gen.listOfN(n max 1, g) }
 
-  lazy val parInt: Gen[Par[Int]] = ???
+  /* Ex 8.16 */
+  lazy val parInt: Gen[Par[Int]] = Gen.int.listOfN(Gen.choose(-100, 100))
+    .map(
+      _.map { n => Par.fork(Par.unit(n)) }
+      .foldLeft(Par.fork(Par.unit(0))){ (acc, b) =>
+        Par.fork(Par.map2(acc, b)(_ + _))
+      }
+    )
 }
 
 case class Gen[+A](sample: State[RNG,A]) {
@@ -241,4 +275,8 @@ case class SGen[+A](forSize: Int => Gen[A]) {
 
   /* Ex 8.11 iv */
   def **[B](s2: SGen[B]): SGen[(A,B)] = SGen { (n) => forSize(n) ** s2.forSize(n) }
+}
+
+object ** {
+  def unapply[A, B](p: (A, B)) = Some(p)
 }

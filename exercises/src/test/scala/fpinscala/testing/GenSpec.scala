@@ -260,6 +260,12 @@ class GenSpec extends FlatSpec with PropertyChecks with BeforeAndAfterEach {
     } finally executorService.shutdown
   }
 
+  behavior of "8.17 ParProps.fork"
+  it should "be proven" in {
+    val result = ParProps.fork.run(100, 100, rng)
+    assert(result == Proved)
+  }
+
   behavior of "8.18 List.takeWhile Props"
   it should "work" in {
     val result = ListProps.takeWhileProp.run(10, 10, rng)
