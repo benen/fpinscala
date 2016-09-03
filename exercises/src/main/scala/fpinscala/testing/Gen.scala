@@ -114,7 +114,7 @@ object Prop {
 }
 
 object ListProps {
-  /* 8.14 i :Prop for List.sorted */
+  /* Ex 8.14 i :Prop for List.sorted */
   lazy val intListGen: Gen[List[Int]] =
     //Gen.int.flatMap(i => Gen.listOf(Gen.int)(i)) // too slow
     Gen.choose(1, 1000).flatMap(Gen.listOf(Gen.int)(_))
@@ -127,13 +127,15 @@ object ListProps {
         l.sorted.size == l.size
       }
 
-  // Exercise 8.14: Prop for List.takeWhile
+  /* Ex 8.18 */
   lazy val takeWhileProp: Prop = {
-    val f = (_: Int) <= 0
-    val p1 = Prop.forAll(intListGen) { l: List[Int] =>
-      l.takeWhile(f).forall(f) == true
+    lazy val intListAndN = intListGen.map2(Gen.int)((_, _))
+    val p1 = Prop.forAll(intListAndN) { case (l, i) =>
+      l.takeWhile(_ <= i).forall(_ <= i)
     }
-    val p2: Prop = ???
+    val p2 = Prop.forAll(intListAndN) { case (l, i) =>
+      l.takeWhile(_ <= i) ++ l.dropWhile(_ <= i) == l
+    }
     p1 && p2
   }
 }
