@@ -16,7 +16,7 @@ class MonoidSpec extends FlatSpec with PropertyChecks {
   import Prop._
   def runProp(prop: Prop, testCases: TestCases): Result = {
     import fpinscala.state.RNG.Simple
-    prop.run(testCases, Simple(0))
+    prop.run(100, testCases, Simple(0))
   }
 
   def testMonoidLaws(testCases: TestCases): Result = {

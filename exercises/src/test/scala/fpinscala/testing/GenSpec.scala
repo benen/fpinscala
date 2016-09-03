@@ -23,7 +23,7 @@ class GenSpec extends FlatSpec with PropertyChecks with BeforeAndAfterEach {
   }
 
   implicit class TestPropOps(prop: Prop) {
-    def get: Result = prop.run(1, rng)
+    def get: Result = prop.run(100, 100, rng)
   }
 
   override def beforeEach =
@@ -147,7 +147,7 @@ class GenSpec extends FlatSpec with PropertyChecks with BeforeAndAfterEach {
   behavior of "8.9.1 Prop.&&"
   it should "work" in {
     def asProp(b: Boolean, msg: String = "bollocks"): Prop =
-      Prop((_,_) => if (b) Passed else Falsified(msg, 1))
+      Prop((_,_,_) => if (b) Passed else Falsified(msg, 1))
     def testAnd(check1: Boolean, check2: Boolean, expected: Boolean, msg: String) =
       assertResult(asProp(expected, msg).get)((asProp(check1) && asProp(check2)).get)
 
@@ -164,7 +164,7 @@ class GenSpec extends FlatSpec with PropertyChecks with BeforeAndAfterEach {
   behavior of "8.9.2 Prop.||"
   it should "work" in {
     def asProp(b: Boolean, msg: String = "bollocks"): Prop =
-      Prop((_,_) => if (b) Passed else Falsified(msg, 1))
+      Prop((_,_,_) => if (b) Passed else Falsified(msg, 1))
     def testOr(check1: Boolean, check2: Boolean, expected: Boolean, msg: String) =
       assertResult(asProp(expected, msg).get)((asProp(check1) || asProp(check2)).get)
 
@@ -232,7 +232,7 @@ class GenSpec extends FlatSpec with PropertyChecks with BeforeAndAfterEach {
 
   behavior of "8.14 List.sorted Props"
   it should "work" in {
-    val result = ListProps.sortedProp.run(10, rng)
+    val result = ListProps.sortedProp.run(10, 10, rng)
     assert(result == Passed)
   }
 
@@ -262,7 +262,7 @@ class GenSpec extends FlatSpec with PropertyChecks with BeforeAndAfterEach {
 
   behavior of "8.18 List.takeWhile Props"
   it should "work" in {
-    val result = ListProps.takeWhileProp.run(10, rng)
+    val result = ListProps.takeWhileProp.run(10, 10, rng)
     assert(result == Passed)
   }
 }
