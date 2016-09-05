@@ -29,14 +29,18 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def slice[A](p: Parser[A]): Parser[String] // 154
 
-  def many1[A](p: Parser[A]): Parser[List[A]] = // 154
-    ???
+
 
   def product[A,B](p: Parser[A], p2: => Parser[B]): Parser[(A,B)] = // 154, 156, 157
     ???
 
+  /* Exercise 9.1 i */
   def map2[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = // 157
-    ???
+    map(product(p, p2))(f.tupled)
+
+  /* Exercise 9.1 ii */
+  def many1[A](p: Parser[A]): Parser[List[A]] = // 154
+    map2(p, many(p))(_ :: _)
 
   def flatMap[A,B](p: Parser[A])(f: A => Parser[B]): Parser[B] // 157
 
@@ -63,8 +67,9 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   }
 
   object Exercises {
+    /* Exercise 9.1 i */
     def map2ViaProduct[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = // 154
-      ???
+      map(product(p, p2))(f.tupled)
 
     def csListOfN[A](p: Parser[A]): Parser[List[A]] = // 157
       ???
