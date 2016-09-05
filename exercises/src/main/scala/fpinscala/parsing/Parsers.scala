@@ -1,5 +1,7 @@
 package fpinscala.parsing
 
+import fpinscala.testing.{Gen, Prop}
+
 import language.higherKinds
 import scala.util.matching.Regex
 
@@ -64,6 +66,26 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   }
 
   object Laws {
+    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
+      Prop.forAll(in)(s => run(p1)(s) == run(p2)(s))
+
+    def notEqual[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
+      Prop.forAll(in)(s => run(p1)(s) != run(p2)(s))
+
+    def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
+      equal(p, p.map((a: A) => a))(in)
+
+    /* Ex 9.2 i */
+    def productLaw1[A, B](p1: Parser[A], p2: Parser[B])(in: Gen[String]): Prop =
+      equal(product(p1, p1), map(p1)(a => (a, a)))(in)
+
+    /* Ex 9.2 ii */
+    def productLaw2[A, B](p1: Parser[A], p2: Parser[B])(in: Gen[String]): Prop =
+      equal(product(p1, p2), map2(p1, p1)((_, _)))(in) // shouldn't modify and preserves order
+
+    /* Ex 9.2 iii */
+    def productLaw3[A, B, C](p1: Parser[A], p2: Parser[B], p3: Parser[B])(in: Gen[String]): Prop =
+      notEqual(product(product(p1, p2), p3), product(p1, product(p2, p3)))(in) // non associative
   }
 
   object Exercises {
