@@ -23,7 +23,10 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   /* Ex 9.4 */
   def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = // 150, 155
-    ???
+    if (n > 0)
+      map2(p, listOfN(n - 1, p))(_ :: _)
+    else
+      succeed(List())
 
 
   def map[A,B](a: Parser[A])(f: A => B): Parser[B] = // 152
