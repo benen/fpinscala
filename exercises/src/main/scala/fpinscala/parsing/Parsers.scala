@@ -15,11 +15,16 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   implicit def asStringParser[A](a: A)(implicit f: A => Parser[String]): ParserOps[String] = // 150
     ParserOps(f(a))
 
+  /* Ex 9.3 */
+  def many[A](p: Parser[A]): Parser[List[A]] = // 152, 155
+    map2(p, many(p))(_ :: _) or succeed(List()) // but how is the p incremented, moved or what have you? does this
+    // indicate that the run method is actually responsible for shifting the input to the parsers each time they are
+    // called? I guess this is a hint as to what the implementation could be...
+
+  /* Ex 9.4 */
   def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = // 150, 155
     ???
 
-  def many[A](p: Parser[A]): Parser[List[A]] = // 152, 155
-    ???
 
   def map[A,B](a: Parser[A])(f: A => B): Parser[B] = // 152
     ???

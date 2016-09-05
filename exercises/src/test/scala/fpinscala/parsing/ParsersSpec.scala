@@ -44,10 +44,7 @@ class ParsersSpec extends FlatSpec with PropertyChecks with ParserTest[TestParse
   it should "hold" in {
     forAll(limitedStringGen(1, 10) label "s") { s: String =>
       val p1: Parser[String] = string(s)
-      val p2: Parser[String] = string(s)
-      val p3: Parser[String] = string(s)
       equal(product(p1,p1), p1.map((a:String) => (a,a)))
-      equal(product(p1,p2), map2(p1, p2)((_,_)))
     }
   }
 
