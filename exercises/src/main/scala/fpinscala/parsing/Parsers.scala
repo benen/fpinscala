@@ -30,7 +30,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
 
   def map[A,B](a: Parser[A])(f: A => B): Parser[B] = // 152
-    ???
+    flatMap(a)(aa => succeed(f(aa)))
 
   def char(c: Char): Parser[Char] = // 153
     string(c.toString) map ((_: String).charAt(0))
