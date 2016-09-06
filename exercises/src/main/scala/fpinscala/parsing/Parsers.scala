@@ -39,7 +39,8 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def slice[A](p: Parser[A]): Parser[String] // 154
 
-
+  /* Ex 9.5 */
+  def lazyUnit[A](p: => Parser[A]): Parser[A] = p
 
   def product[A,B](p: Parser[A], p2: => Parser[B]): Parser[(A,B)] = // 154, 156, 157
     ???
