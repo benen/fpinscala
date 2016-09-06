@@ -42,12 +42,13 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   /* Ex 9.5 */
   def lazyUnit[A](p: => Parser[A]): Parser[A] = p
 
+  /* Ex 9.7 i */
   def product[A,B](p: Parser[A], p2: => Parser[B]): Parser[(A,B)] = // 154, 156, 157
-    ???
+    p.flatMap((a: A) => p2.map((b: B) => (a, b)))
 
-  /* Exercise 9.1 i */
+  /* Ex 9.7 ii */
   def map2[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = // 157
-    map(product(p, p2))(f.tupled)
+    p.flatMap((a: A) => p2.map((b: B) => f(a, b)))
 
   /* Exercise 9.1 ii */
   def many1[A](p: Parser[A]): Parser[List[A]] = // 154
