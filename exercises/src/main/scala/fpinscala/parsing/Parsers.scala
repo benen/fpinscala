@@ -102,8 +102,9 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     def map2ViaProduct[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = // 154
       map(product(p, p2))(f.tupled)
 
+    /* Exercise 9.6 */
     def csListOfN[A](p: Parser[A]): Parser[List[A]] = // 157
-      ???
+      "^[0-9]+".r.flatMap( d => listOfN(d.toInt, p))
   }
 }
 
