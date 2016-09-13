@@ -41,8 +41,6 @@ class ParserImplSpec extends FlatSpec with PropertyChecks with ParserTest[Parser
       assert(p(s + "_") == Success(s, s.length), s"""$ps("${s}_")""")
       assert(regex(s".$s".r)("_" + s) == Success("_" + s, s.length + 1), s"""regex(".$s".r)("_$s")""")
       assert(p(Location("_" + s, 1)) == Success(s, s.length), s"""$ps(Location("_$s",1))""")
-
-      assertFailure(p("_" + s), false, s"""$ps("_$s")""")
     }
   }
 

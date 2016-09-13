@@ -37,14 +37,43 @@ object ParserImpl extends Parsers[ParserTypes.Parser] {
   override def run[A](p: Parser[A])(input: String): Either[ParseError,A] = // 149, 163, 170
     ???
 
+  /* Ex 9.13 i */
   override implicit def string(s: String): Parser[String] = // 149, 167
-    ???
+    location => {
+      val target = location.input.substring(location.offset)
+      if (target.startsWith(s)) {
+        Success(s, s.length)
+      }
+      else {
+        Failure(ParseError(List(location -> s"couldn't parse $s"), List()), true)
+      }
+    }
 
+
+  /* Ex 9.13 ii */
   override implicit def regex(r: Regex): Parser[String] = // 157, 167
-    ???
+    location => {
+      val target = location.input.substring(location.offset)
+      r.findFirstIn(target) match {
+        case Some(matched) => Success(matched, matched.size)
+        case None => Failure(ParseError(List(location -> s"Np match found for $r")), false)
+      }
+    }
 
+  /* Ex 9.13 iii */
+  override def succeed[A](a: A): Parser[A] = // 153, 167
+    location => Success(a, 0)
+
+  /* Ex 9.13 iv */
   override def slice[A](p: Parser[A]): Parser[String] = // 154, 167
-    ???
+    location => {
+      val initialOffset = location.offset
+      p(location) match {
+      case Success(v, currentOffset) =>
+        Success(location.input.substring(initialOffset, initialOffset + currentOffset), currentOffset)
+      case f: Failure => f
+    }}
+
 
   override def label[A](msg: String)(p: Parser[A]): Parser[A] = // 161
     s => p(s).mapError(_.label(msg)) // 168
@@ -68,8 +97,4 @@ object ParserImpl extends Parsers[ParserTypes.Parser] {
       case Failure(e, false) => s2(s)
       case r => r
     }
-
-  override def succeed[A](a: A): Parser[A] = // 153, 167
-    ???
-
 }

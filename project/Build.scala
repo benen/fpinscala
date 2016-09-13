@@ -10,6 +10,7 @@ object FPInScalaBuild extends Build {
       "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
       "junit" % "junit" % "4.10" % "test"
     )
+    ,testOptions in Test += Tests.Argument("-oF")
   )
 
 
