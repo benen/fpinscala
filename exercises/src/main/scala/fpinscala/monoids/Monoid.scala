@@ -74,13 +74,18 @@ object Monoid {
 
   /* Ex 10.5 */
   def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B =
-    as.map(f).fold(m.zero)(m.op)
+    as.foldLeft(m.zero)((b, a) => m.op(b, f(a))) // switching to stack safe
 
+  /* Ex 10.6 i */
   def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
-    sys.error("todo")
+    foldMap(as, new Monoid[B => B] {
+      override def op(a1: (B) => B, a2: (B) => B): (B) => B = endoMonoid[B].op(a2, a1)
+      override def zero: (B) => B = endoMonoid[B].zero
+    } )(f.curried)(z)
 
+  /* Ex 10.6 ii */
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
-    sys.error("todo")
+    foldMap(as, endoMonoid[B]){ a => b => f(b, a) }(z)
 
   def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
     sys.error("todo")
