@@ -49,14 +49,13 @@ object ParserImpl extends Parsers[ParserTypes.Parser] {
       }
     }
 
-
   /* Ex 9.13 ii */
   override implicit def regex(r: Regex): Parser[String] = // 157, 167
     location => {
       val target = location.input.substring(location.offset)
       r.findFirstIn(target) match {
         case Some(matched) => Success(matched, matched.size)
-        case None => Failure(ParseError(List(location -> s"Np match found for $r")), false)
+        case None => Failure(ParseError(List(location -> s"No match found for $r")), false)
       }
     }
 
@@ -69,9 +68,9 @@ object ParserImpl extends Parsers[ParserTypes.Parser] {
     location => {
       val initialOffset = location.offset
       p(location) match {
-      case Success(v, currentOffset) =>
-        Success(location.input.substring(initialOffset, initialOffset + currentOffset), currentOffset)
-      case f: Failure => f
+        case Success(v, currentOffset) =>
+          Success(location.input.substring(initialOffset, initialOffset + currentOffset), currentOffset)
+        case f: Failure => f
     }}
 
 
