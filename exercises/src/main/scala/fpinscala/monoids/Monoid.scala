@@ -59,7 +59,13 @@ object Monoid {
 
   import fpinscala.testing._
   import Prop._
-  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = sys.error("todo")
+
+  /* Ex 10.4 */
+  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = forAll(gen) { (a) =>
+    m.op(a, m.zero) == a &&
+    m.op(m.zero, a) == a &&
+    m.op(m.zero, m.op(a, m.zero)) == m.op(m.op(m.zero, a), m.zero)
+  }
 
   def trimMonoid(s: String): Monoid[String] = sys.error("todo")
 

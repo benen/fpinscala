@@ -198,7 +198,7 @@ object Gen {
         a <- gen
       } yield if (b) Some(a) else None
 
-  def stringN(n: Int): Gen[String] = ???
+  def stringN(n: Int): Gen[String] = listOfN(n, int.map(_.toString)).map(_.foldLeft("")(_ + _))
 
   /* Ex 8.7 */
   def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
