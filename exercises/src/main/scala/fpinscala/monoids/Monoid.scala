@@ -1,8 +1,10 @@
 package fpinscala.monoids
 
 import fpinscala.parallelism.Nonblocking._
-import fpinscala.parallelism.Nonblocking.Par.toParOps // infix syntax for `Par.map`, `Par.flatMap`, etc
+import fpinscala.parallelism.Nonblocking.Par.toParOps
+
 import language.higherKinds
+import scala.collection.Set
 
 trait Monoid[A] {
   def op(a1: A, a2: A): A
@@ -151,15 +153,25 @@ object Monoid {
   lazy val wcMonoid: Monoid[WC] = new Monoid[WC]{
     override def op(a1: WC, a2: WC): WC = {
       (a1, a2) match {
-      case (Stub(s1),         Stub(s2))         => Stub(s1 + s2)
-      case (Stub(s1),         Part(s2, c, s3))  => Part(s1 + s2, c, s3)
+      case (Stub(s1), Stub(s2))                 => Stub(s1 + s2)
+      case (Stub(s1), Part(s2, c, s3))          => Part(s1 + s2, c, s3)
       case (Part(s1, c, s2),  Stub(s3))         => Part(s1, c, s2 + s3)
-      case (Part(s1, c1, s2), Part(s3, c2, s4)) => Part(s1, c1 + c2 + 1, s4)
+      case (Part(s1, c1, s2), Part(s3, c2, s4)) => Part(s1, c1 + c2 + (if ((s2 + s3).nonEmpty) 1 else 0), s4)
     }}
     override def zero: WC = Stub("")
   }
 
-  def countWords(s: String): Int = sys.error("todo")
+  /* Ex 10.11 */
+  def countWords(s: String): Int = {
+    foldMapV(s.toCharArray, wcMonoid)(_ match {
+      case c if c.toString.matches("\\s") => Part("", 0, "")
+      case c => Stub(c.toString)
+    }) match {
+      case Stub(s) if s.isEmpty => 0
+      case Stub(s) if s.nonEmpty => 1
+      case Part(start, c, end) => c + (if (start.nonEmpty) 1 else 0) + (if (end.nonEmpty) 1 else 0)
+    }
+  }
 
   def productMonoid[A,B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
     sys.error("todo")
