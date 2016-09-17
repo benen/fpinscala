@@ -96,13 +96,6 @@ object Monoid {
       m.op(foldMapV(s1, m)(f), foldMapV(s2, m)(f))
   }
 
-  def ordered(ints: IndexedSeq[Int]): Boolean =
-    sys.error("todo")
-
-  sealed trait WC
-  case class Stub(chars: String) extends WC
-  case class Part(lStub: String, words: Int, rStub: String) extends WC
-
   /* Ex 10.8 i */
   def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]]{
     override def op(a1: Par[A], a2: Par[A]): Par[A] = Par.map2(a1, a2)(m.op)
@@ -112,6 +105,19 @@ object Monoid {
   /* Ex 10.8 ii */
   def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
     foldMapV(v, par(m))(a => Par.lazyUnit(f(a)))
+
+  /*Ex 10.9 */
+  def ordered(ints: IndexedSeq[Int]): Boolean = {
+    case class Acc(min: Int, max: Int, ordered: Boolean)
+    foldMapV(ints, new Monoid[Acc] {
+      def op(a1: Acc, a2: Acc): Acc = Acc(a1.min, a2.max, a1.ordered && a2.ordered && a1.max <= a2.min)
+      def zero: Acc = Acc(Int.MinValue, Int.MaxValue, true)
+    })(i => Acc(i, i, true)).ordered
+  }
+
+  sealed trait WC
+  case class Stub(chars: String) extends WC
+  case class Part(lStub: String, words: Int, rStub: String) extends WC
 
   lazy val wcMonoid: Monoid[WC] = sys.error("todo")
 
