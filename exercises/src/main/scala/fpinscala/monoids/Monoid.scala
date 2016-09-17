@@ -61,11 +61,39 @@ object Monoid {
   import Prop._
 
   /* Ex 10.4 */
-  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = forAll(gen) { (a) =>
-    m.op(a, m.zero) == a &&
-    m.op(m.zero, a) == a &&
-    m.op(m.zero, m.op(a, m.zero)) == m.op(m.op(m.zero, a), m.zero)
-  }
+  def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop =
+    forAll(gen ** gen ** gen) { case ((a, b), c) =>
+      if (m.op(a, m.op(b, c)) == m.op(m.op(a, b), c))
+        true
+      else {
+        println(
+          s"""
+          |Associative law: ${m.op(a, m.op(b, c))} did not equal ${m.op(m.op(a, b), c)}
+          |  values:
+          |    a=$a
+          |    b=$b
+          |    c=$c
+          |""".stripMargin
+        )
+        false
+      }
+    } &&
+    forAll(gen){ (a) =>
+      if (m.op(a, m.zero) == a)
+        true
+      else {
+        println(s"Identity right: ${m.op(a, m.zero)} did not equal $a")
+        false
+      }
+    } &&
+    forAll(gen) { (a) =>
+      if (m.op(m.zero, a) == a)
+        true
+      else {
+        println(s"Identity left: ${m.op(m.zero, a)} did not equal $a")
+        false
+      }
+    }
 
   def trimMonoid(s: String): Monoid[String] = sys.error("todo")
 
@@ -119,7 +147,17 @@ object Monoid {
   case class Stub(chars: String) extends WC
   case class Part(lStub: String, words: Int, rStub: String) extends WC
 
-  lazy val wcMonoid: Monoid[WC] = sys.error("todo")
+  /* Ex 10.10 */
+  lazy val wcMonoid: Monoid[WC] = new Monoid[WC]{
+    override def op(a1: WC, a2: WC): WC = {
+      (a1, a2) match {
+      case (Stub(s1),         Stub(s2))         => Stub(s1 + s2)
+      case (Stub(s1),         Part(s2, c, s3))  => Part(s1 + s2, c, s3)
+      case (Part(s1, c, s2),  Stub(s3))         => Part(s1, c, s2 + s3)
+      case (Part(s1, c1, s2), Part(s3, c2, s4)) => Part(s1, c1 + c2 + 1, s4)
+    }}
+    override def zero: WC = Stub("")
+  }
 
   def countWords(s: String): Int = sys.error("todo")
 
