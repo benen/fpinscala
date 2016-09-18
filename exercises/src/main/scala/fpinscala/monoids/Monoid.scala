@@ -261,12 +261,17 @@ object TreeFoldable extends Foldable[Tree] {
     foldMap(as)(f.curried)(Monoid.endoMonoid[B])(z)
 }
 
+/* Ex 10.14 */
 object OptionFoldable extends Foldable[Option] {
   override def foldMap[A, B](as: Option[A])(f: A => B)(mb: Monoid[B]): B =
-    sys.error("todo")
-  override def foldLeft[A, B](as: Option[A])(z: B)(f: (B, A) => B) =
-    sys.error("todo")
+    foldLeft(as)(mb.zero)((acc, a) => mb.op(f(a), acc))
+
+  override def foldLeft[A, B](as: Option[A])(z: B)(f: (B, A) => B) = as match {
+    case None => z
+    case Some(a) => f(z, a)
+  }
+
   override def foldRight[A, B](as: Option[A])(z: B)(f: (A, B) => B) =
-    sys.error("todo")
+    foldLeft(as)(z)((b, a) => f(a, b))
 }
 
