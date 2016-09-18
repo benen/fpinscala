@@ -180,11 +180,20 @@ object Monoid {
   }
 
   def mapMergeMonoid[K,V](V: Monoid[V]): Monoid[Map[K, V]] =
-    sys.error("todo")
+    new Monoid[Map[K, V]] {
+      def zero = Map[K, V]()
+      def op(a: Map[K, V], b: Map[K, V]) =
+        (a.keySet ++ b.keySet).foldLeft(zero) { (acc, k) =>
+          acc.updated(k, V.op(a.getOrElse(k, V.zero), b.getOrElse(k, V.zero)))
+        }
+    }
 
   /* Ex 10.17 */
-  def functionMonoid[A,B](B: Monoid[B]): Monoid[A => B] =
-    sys.error("todo")
+  def functionMonoid[A,B](B: Monoid[B]): Monoid[A => B] = new Monoid[(A) => B] {
+    override def op(a1: (A) => B, a2: (A) => B): (A) => B = a => B.op(a1(a), a2(a))
+    override def zero: (A) => B = _ => B.zero
+  }
+
 
   /* Ex 10.18 */
   def bag[A](as: IndexedSeq[A]): Map[A, Int] =
