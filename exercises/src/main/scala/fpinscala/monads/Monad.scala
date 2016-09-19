@@ -61,8 +61,7 @@ trait Monad[M[_]] extends Functor[M] {
   }
 
   /* Ex 11.7 */
-  def compose[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] =
-    a =>
+  def compose[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = a =>
       flatMap(f(a))(g)
 
   /* Ex 11.8 */
@@ -90,10 +89,13 @@ trait Monad[M[_]] extends Functor[M] {
   def join[A](mma: M[M[A]]): M[A] =
    flatMap(mma){ ma: M[A] => ma }
 
-  def composeViaJoinAndMap[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
+  /* Ex 11.13 i */
+  def composeViaJoinAndMap[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = a =>
+    join(map(f(a))(g))
 
-  // Implement in terms of `join`:
-  def flatMapViaJoinAndMap[A,B](ma: M[A])(f: A => M[B]): M[B] = ???
+  /* Ex 11.13 ii */
+  def flatMapViaJoinAndMap[A,B](ma: M[A])(f: A => M[B]): M[B] =
+    join(map(ma)(f))
 }
 
 case class Reader[R, A](run: R => A)
