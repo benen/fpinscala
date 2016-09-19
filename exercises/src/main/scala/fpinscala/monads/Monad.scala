@@ -76,6 +76,16 @@ trait Monad[M[_]] extends Functor[M] {
   // substitute f(a) for x and we have the same as the listing in the book
   // flatMap(flatMap(x)(g))(h)            == flatMap(x)(b => flatMap(g(b))(h))
 
+  /* Ex 11.10 */
+  // compose(f, unit)            == f == compose(unit, f)
+  // a => flatMap(f(a))(unit(_)) == f == a => flatMap(unit(a)(f)
+  // let f(a) == x
+  // flatMap(x)(unit)            == f == a => flatMap(unit(a))(f)
+
+  /* Ex 11.11 */
+  // let's use the option monad, with f: A => M[List[A]]
+  // compose(f, unit): Option[A] => M[List[A]] == compose(unit, f): Option[A] => M[List[A]]
+
   def join[A](mma: M[M[A]]): M[A] = ???
 
   def composeViaJoinAndMap[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
