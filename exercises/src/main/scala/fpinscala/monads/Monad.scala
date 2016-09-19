@@ -54,7 +54,11 @@ trait Monad[M[_]] extends Functor[M] {
     go(unit(List.empty[A]), n)
   }
 
-  def filterM[A](la: List[A])(f: A => M[Boolean]): M[List[A]] = ???
+  /* Ex 11.6 */
+  def filterM[A](la: List[A])(f: A => M[Boolean]): M[List[A]] = la match {
+    case Nil => unit(Nil)
+    case x :: xs => map2(map(f(x))(if (_) List(x) else List()),  filterM(xs)(f))(_ ++ _)
+  }
 
   def compose[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
 
