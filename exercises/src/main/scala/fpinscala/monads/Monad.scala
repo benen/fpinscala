@@ -60,14 +60,25 @@ trait Monad[M[_]] extends Functor[M] {
     case x :: xs => map2(map(f(x))(if (_) List(x) else List()),  filterM(xs)(f))(_ ++ _)
   }
 
-  def compose[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
+  /* Ex 11.7 */
+  def compose[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] =
+    a =>
+      flatMap(f(a))(g)
 
-  def composeViaJoinAndMap[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
+  /* Ex 11.8 */
+  def flatMapViaCompose[A,B](ma: M[A])(f: A => M[B]): M[B] =
+      compose({ _: Unit => ma }, f)()
 
-  // Implement in terms of `compose`:
-  def flatMapViaCompose[A,B](ma: M[A])(f: A => M[B]): M[B] = ???
+  /* Ex 11.9 */
+  // compose(compose(f, g), h): A => M[D] == compose(f, compose(g, h))
+  // a => flatMap(compose(f, g)(a))(h)    == a => flatMap(f(a))(b => compose(g, h)(b))
+  // a => flatMap(flatMap(f(a))(g))(h)    == a => flatMap(f(a))(b => flatMap(g(b))(h))
+  // substitute f(a) for x and we have the same as the listing in the book
+  // flatMap(flatMap(x)(g))(h)            == flatMap(x)(b => flatMap(g(b))(h))
 
   def join[A](mma: M[M[A]]): M[A] = ???
+
+  def composeViaJoinAndMap[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
 
   // Implement in terms of `join`:
   def flatMapViaJoinAndMap[A,B](ma: M[A])(f: A => M[B]): M[B] = ???
