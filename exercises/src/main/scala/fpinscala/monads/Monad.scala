@@ -86,7 +86,9 @@ trait Monad[M[_]] extends Functor[M] {
   // let's use the option monad, with f: A => M[List[A]]
   // compose(f, unit): Option[A] => M[List[A]] == compose(unit, f): Option[A] => M[List[A]]
 
-  def join[A](mma: M[M[A]]): M[A] = ???
+  /* Ex 11.12 */
+  def join[A](mma: M[M[A]]): M[A] =
+   flatMap(mma){ ma: M[A] => ma }
 
   def composeViaJoinAndMap[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
 
