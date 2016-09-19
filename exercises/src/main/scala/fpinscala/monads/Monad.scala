@@ -66,15 +66,35 @@ object Monad {
       ma flatMap f
   }
 
-  lazy val parMonad: Monad[Par] = ???
+  /* Ex 11.1 i */
+  lazy val parMonad: Monad[Par] = new Monad[Par] {
+    override def flatMap[A, B](ma: Par[A])(f: (A) => Par[B]): Par[B] = Par.flatMap(ma)(f)
+    override def unit[A](a: => A): Par[A] = Par.unit(a)
+  }
 
-  def parserMonad[P[+_]](p: Parsers[P]): Monad[P] = ???
+  /* Ex 11.1 ii */
+  def parserMonad[P[+_]](p: Parsers[P]): Monad[P] = new Monad[P] {
+    override def flatMap[A, B](ma: P[A])(f: (A) => P[B]): P[B] = p.flatMap(ma)(f)
+    override def unit[A](a: => A): P[A] = p.succeed(a)
+  }
 
-  lazy val optionMonad: Monad[Option] = ???
+  /* Ex 11.1 iii */
+  lazy val optionMonad: Monad[Option] = new Monad[Option] {
+    override def flatMap[A, B](ma: Option[A])(f: (A) => Option[B]): Option[B] = ma flatMap f
+    override def unit[A](a: => A): Option[A] = Some(a)
+  }
 
-  lazy val streamMonad: Monad[Stream] = ???
+  /* Ex 11.1 iv */
+  lazy val streamMonad: Monad[Stream] = new Monad[Stream] {
+    override def flatMap[A, B](ma: Stream[A])(f: (A) => Stream[B]): Stream[B] = ma flatMap f
+    override def unit[A](a: => A): Stream[A] = Stream(a)
+  }
 
-  lazy val listMonad: Monad[List] = ???
+  /* Ex 11.1 v */
+  lazy val listMonad: Monad[List] = new Monad[List] {
+    override def flatMap[A, B](ma: List[A])(f: (A) => List[B]): List[B] = ma flatMap f
+    override def unit[A](a: => A): List[A] = List(a)
+  }
 
   def stateMonad[S]: Monad[({type lambda[x] = State[S, x]})#lambda] = ???
 
