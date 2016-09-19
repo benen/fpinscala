@@ -96,7 +96,12 @@ object Monad {
     override def unit[A](a: => A): List[A] = List(a)
   }
 
-  def stateMonad[S]: Monad[({type lambda[x] = State[S, x]})#lambda] = ???
+  /* Ex 11.2 */
+  // Type signature already given. But basically you construct an existential type that conforms to State[S, A] 
+  def stateMonad[S]: Monad[({type lambda[x] = State[S, x]})#lambda] = new Monad[({type lambda[x] = State[S, x]})#lambda] {
+    override def flatMap[A, B](ma: State[S, A])(f: (A) => State[S, B]): State[S, B] = ma.flatMap(f)
+    override def unit[A](a: => A): State[S, A] = State.unit(a)
+  }
 
   lazy val idMonad: Monad[Id] = ???
 
