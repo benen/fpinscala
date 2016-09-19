@@ -36,9 +36,13 @@ trait Monad[M[_]] extends Functor[M] {
   def map2[A,B,C](ma: M[A], mb: M[B])(f: (A, B) => C): M[C] =
     flatMap(ma)(a => map(mb)(b => f(a, b)))
 
-  def sequence[A](lma: List[M[A]]): M[List[A]] = ???
+  /* Ex 11.3 i */
+  def sequence[A](lma: List[M[A]]): M[List[A]] =
+    lma.foldLeft(unit(List.empty[A])){ (mla, ma) => map2(mla, ma)((la, a) => la :+ a) }
 
-  def traverse[A,B](la: List[A])(f: A => M[B]): M[List[B]] = ???
+  /* Ex 11.3 ii */
+  def traverse[A,B](la: List[A])(f: A => M[B]): M[List[B]] =
+    la.foldLeft(unit(List.empty[B])){ (mlb, a) => map2(mlb, f(a))((lb, b) => lb :+ b) }
 
   def replicateM[A](n: Int, ma: M[A]): M[List[A]] = ???
 
@@ -97,7 +101,7 @@ object Monad {
   }
 
   /* Ex 11.2 */
-  // Type signature already given. But basically you construct an existential type that conforms to State[S, A] 
+  // Type signature already given. But basically you construct an existential type that conforms to State[S, A]
   def stateMonad[S]: Monad[({type lambda[x] = State[S, x]})#lambda] = new Monad[({type lambda[x] = State[S, x]})#lambda] {
     override def flatMap[A, B](ma: State[S, A])(f: (A) => State[S, B]): State[S, B] = ma.flatMap(f)
     override def unit[A](a: => A): State[S, A] = State.unit(a)
