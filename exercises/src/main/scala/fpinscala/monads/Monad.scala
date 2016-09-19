@@ -96,6 +96,13 @@ trait Monad[M[_]] extends Functor[M] {
   /* Ex 11.13 ii */
   def flatMapViaJoinAndMap[A,B](ma: M[A])(f: A => M[B]): M[B] =
     join(map(ma)(f))
+
+  /* Ex 11.14 */
+  // Associativity
+  // flatMap(flatMap(x)(f))(g)    == flatMap(x)(a => flatMap(f(a))(g))
+  // join(map(join(map(x)(f))(g)) == join(map(x)(a => join(map(f(a))(g))))
+  // Identity
+  // join(map(join(map(x))(unit))(f)) == join(map(join(map(x))(f))(unit))
 }
 
 case class Reader[R, A](run: R => A)
