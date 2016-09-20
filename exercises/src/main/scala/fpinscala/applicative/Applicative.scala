@@ -44,10 +44,21 @@ trait Applicative[F[_]] extends Functor[F] { self =>
   /* Ex 12.2 iii */
   def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] =
     apply(apply(unit(f.curried))(fa))(fb)
-  
-  def map3[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = ???
 
-  def map4[A,B,C,D,E](fa: F[A], fb: F[B], fc: F[C], fd: F[D])(f: (A, B, C, D) => E): F[E] = ???
+  /* Ex 12.3 i */
+  def map3[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = {
+    val fbcd: F[B => C => D] = apply(unit(f.curried))(fa)
+    val fcd: F[C => D] = apply(fbcd)(fb)
+    apply(fcd)(fc)
+  }
+
+  /* Ex 12.3 ii */
+  def map4[A,B,C,D,E](fa: F[A], fb: F[B], fc: F[C], fd: F[D])(f: (A, B, C, D) => E): F[E] = {
+    val fbcde: F[B => C => D => E] = apply(unit(f.curried))(fa)
+    val fcde: F[C => D => E] = apply(fbcde)(fb)
+    val fde: F[D => E] = apply(fcde)(fc)
+    apply(fde)(fd)
+  }
 
   def factor[A,B](fa: F[A], fb: F[A]): F[(A,B)] = ???
 
