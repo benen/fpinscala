@@ -16,13 +16,7 @@ trait Applicative[F[_]] extends Functor[F] { self =>
     def map[B](f: A => B): F[B] = self.map(fa)(f)
   }
 
-  def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = ???
-
-  def apply[A,B](fab: F[A => B])(fa: F[A]): F[B] = ???
-
   def unit[A](a: => A): F[A]
-
-  def map[A,B](fa: F[A])(f: A => B): F[B] = ???
 
   /* Ex 12.1 i */
   def sequence[A](fas: List[F[A]]): F[List[A]] =
@@ -39,6 +33,18 @@ trait Applicative[F[_]] extends Functor[F] { self =>
   def product[A,B](fa: F[A], fb: F[B]): F[(A,B)] =
     map2(fa, fb)((_,_))
 
+  /* Ex 12.2 i */
+  def apply[A,B](fab: F[A => B])(fa: F[A]): F[B] =
+    map2(fa, fab)((a, ab) => ab(a))
+
+  /* Ex 12.2 ii */
+  def map[A,B](fa: F[A])(f: A => B): F[B] =
+    apply(unit(f))(fa)
+
+  /* Ex 12.2 iii */
+  def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] =
+    apply(apply(unit(f.curried))(fa))(fb)
+  
   def map3[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = ???
 
   def map4[A,B,C,D,E](fa: F[A], fb: F[B], fc: F[C], fd: F[D])(f: (A, B, C, D) => E): F[E] = ???
