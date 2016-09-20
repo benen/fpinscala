@@ -22,16 +22,22 @@ trait Applicative[F[_]] extends Functor[F] { self =>
 
   def unit[A](a: => A): F[A]
 
-  def map[A,B](fa: F[A])(f: A => B): F[B] =
-    apply(unit(f))(fa)
+  def map[A,B](fa: F[A])(f: A => B): F[B] = ???
 
-  def sequence[A](fas: List[F[A]]): F[List[A]] = ???
+  /* Ex 12.1 i */
+  def sequence[A](fas: List[F[A]]): F[List[A]] =
+    fas.foldLeft(unit(List.empty[A])){ (acc, a) => map2(acc, a)(_ :+ _) }
 
-  def traverse[A,B](as: List[A])(f: A => F[B]): F[List[B]] = ???
+  def traverse[A,B](as: List[A])(f: A => F[B]): F[List[B]] =
+    as.foldLeft(unit(List.empty[B])){ (acc, a) => map2(acc, f(a))(_ :+ _) }
 
-  def replicateM[A](n: Int, fa: F[A]): F[List[A]] = ???
+  /* Ex 12.1 ii */
+  def replicateM[A](n: Int, fa: F[A]): F[List[A]] =
+    sequence(List.fill(n)(fa))
 
-  def product[A,B](fa: F[A], fb: F[B]): F[(A,B)] = ???
+  /* Ex 12.1 iii */
+  def product[A,B](fa: F[A], fb: F[B]): F[(A,B)] =
+    map2(fa, fb)((_,_))
 
   def map3[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] = ???
 
