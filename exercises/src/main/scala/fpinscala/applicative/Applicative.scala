@@ -112,9 +112,18 @@ case class Success[A](a: A) extends Validation[Nothing, A]
 
 object Applicative {
 
-  lazy val listApplicative: Applicative[List] = ???
+  lazy val listApplicative: Applicative[List] = new Applicative[List] {
+    override def unit[A](a: => A): List[A] = List(a)
+    override def map2[A, B, C](fa: List[A], fb: List[B])(f: (A, B) => C): List[C] = fa zip fb map f.tupled
+  }
 
-  lazy val optionApplicative: Applicative[Option] = ???
+  lazy val optionApplicative: Applicative[Option] = new Applicative[Option] {
+    override def unit[A](a: => A): Option[A] = Some(a)
+    override def map2[A, B, C](fa: Option[A], fb: Option[B])(f: (A, B) => C): Option[C] = for {
+      a <- fa
+      b <- fb
+    } yield (f(a, b))
+  }
 
   val streamApplicative = new Applicative[Stream] {
 
