@@ -62,16 +62,31 @@ trait Applicative[F[_]] extends Functor[F] { self =>
 
   def factor[A,B](fa: F[A], fb: F[A]): F[(A,B)] = ???
 
-  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = ???
+  /* Ex 12.8 */
+  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = {
+    new Applicative[({type f[x] = (F[x], G[x])})#f] {
+      override def unit[A](a: => A): (F[A], G[A]) =
+        (self.unit(a), G.unit(a))
+      override def apply[A, B](fab: (F[(A) => B], G[(A) => B]))(fa: (F[A], G[A])): (F[B], G[B]) =
+        (self.apply(fab._1)(fa._1), G.apply(fab._2)(fa._2))
+    }
+  }
 
-  def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = ???
+  /* Ex 12.9 */
+  def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] =
+    new Applicative[({type f[x] = F[G[x]]})#f] {
+      override def unit[A](a: => A): F[G[A]] =
+        self.map(self.unit(a))(aa => G.unit(aa))
+      override def map2[A, B, C](fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] =
+        self.map2(fa, fb)((ga, gb) => G.map2(ga, gb)(f))
+    }
 
   def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] = ???
 }
 
 case class Tree[+A](head: A, tail: List[Tree[A]])
 
-trait Monad[F[_]] extends Applicative[F] {
+trait Monad[F[_]] extends Applicative[F] { self =>
   def flatMap[A,B](ma: F[A])(f: A => F[B]): F[B] = join(map(ma)(f))
 
   def join[A](mma: F[F[A]]): F[A] = flatMap(mma)(ma => ma)
@@ -79,11 +94,18 @@ trait Monad[F[_]] extends Applicative[F] {
   def compose[A,B,C](f: A => F[B], g: B => F[C]): A => F[C] =
     a => flatMap(f(a))(g)
 
+  /* Ex 12.11 */
+//  def compose[G[_]](G: Monad[G]): Monad[({type f[x] = F[G[x]]})#f] = new Monad[({type f[x] = F[G[x]]})#f] {
+//    override def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+//    override def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] = self.flatMap(ma)(ga => G.flatMap(ga)(a => f(a)))
+//  }
+
   override def apply[A,B](mf: F[A => B])(ma: F[A]): F[B] =
     flatMap(mf)(f => map(ma)(a => f(a)))
 }
 
 object Monad {
+  /* Ex 12.5 */
   def eitherMonad[E] = new Monad[({type f[x] = Either[E, x]})#f] {
     override def unit[A](a: => A): Either[E, A] = Right(a)
     override def flatMap[A, B](ma: Either[E, A])(f: (A) => Either[E, B]): Either[E, B] = ma match {
