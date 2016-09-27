@@ -212,64 +212,63 @@ class ApplicativeSpec extends FlatSpec with PropertyChecks {
         toWebForm(badName, badBirthDate, badPhoneNumber))
   }
 
-  behavior of "12.5 eitherMonad.flatMap"
-  it should "stop at first failure in WebForm example" in {
-    val checkResultEither = new CheckResult[Either] {
-      override def success[A](a: A) = Right(a)
-      override def failure[A](s: String) = Left(s)
-    }
-    import checkResultEither._
-    val eitherM = Monad.eitherMonad[String]
-    implicit class EitherOps[A](either: Either[String, A]) {
-      def flatMap[B](f: A => Either[String, B]) = eitherM.flatMap(either)(f)
-      def map[B](f: A => B) = eitherM.map(either)(f)
-    }
+//  behavior of "12.5 eitherMonad.flatMap"
+//  it should "stop at first failure in WebForm example" in {
+//    val checkResultEither = new CheckResult[Either] {
+//      override def success[A](a: A) = Right(a)
+//      override def failure[A](s: String) = Left(s)
+//    }
+//    import checkResultEither._
+//    val eitherM = Monad.eitherMonad[String]
+//    implicit class EitherOps[A](either: Either[String, A]) {
+//      def flatMap[B](f: A => Either[String, B]) = eitherM.flatMap(either)(f)
+//      def map[B](f: A => B) = eitherM.map(either)(f)
+//    }
+//
+//    def monadicWebFormViaFlatMap(name: String, birthDate: String, phoneNumber: String) =
+//      for {
+//        n <- validName(name)
+//        d <- validBirthdate(birthDate)
+//        p <- validPhone(phoneNumber)
+//      } yield WebForm(n,d,p)
+//
+//    val flatMapResults = getResults(monadicWebFormViaFlatMap)
+//    println(flatMapResults)
+//    assert(flatMapResults ==
+//      (WebFormSuccess, NameFailure, NameFailure, NameFailure)) // always only first failure
+//
+//    def monadicWebFormViaMap3(name: String, birthDate: String, phoneNumber: String) =
+//      eitherM.map3(
+//        validName(name),
+//        validBirthdate(birthDate),
+//        validPhone(phoneNumber))(WebForm(_, _, _))
+//    val map3Results = getResults(monadicWebFormViaMap3)
+//    assert(map3Results ==
+//      (WebFormSuccess, NameFailure, NameFailure, NameFailure)) // again: always only first failure
+//  }
 
-    def monadicWebFormViaFlatMap(name: String, birthDate: String, phoneNumber: String) =
-      //      for {
-      //        n <- validName(name)
-      //        d <- validBirthdate(birthDate)
-      //        p <- validPhone(phoneNumber)
-      //      } yield WebForm(n,d,p)
-      validName(name) flatMap (f1 =>
-        validBirthdate(birthDate) flatMap (f2 =>
-          validPhone(phoneNumber) map (f3 => WebForm(f1, f2, f3))))
-    val flatMapResults = getResults(monadicWebFormViaFlatMap)
-    assert(flatMapResults ==
-      (WebFormSuccess, NameFailure, NameFailure, NameFailure)) // always only first failure
-
-    def monadicWebFormViaMap3(name: String, birthDate: String, phoneNumber: String) =
-      eitherM.map3(
-        validName(name),
-        validBirthdate(birthDate),
-        validPhone(phoneNumber))(WebForm(_, _, _))
-    val map3Results = getResults(monadicWebFormViaMap3)
-    assert(map3Results ==
-      (WebFormSuccess, NameFailure, NameFailure, NameFailure)) // again: always only first failure
-  }
-
-  behavior of "12.6 validationApplicative"
-  it should "accumulate errors in WebForm example" in {
-    val checkResultValidation = new CheckResult[Validation] {
-      override def success[A](a: A) = Success(a)
-      override def failure[A](s: String) = Failure(s, Vector())
-    }
-    import checkResultValidation._
-
-    def applicativeWebFormViaMap3(name: String, birthDate: String, phoneNumber: String) =
-      validationApplicative.map3(
-        validName(name),
-        validBirthdate(birthDate),
-        validPhone(phoneNumber))(WebForm(_, _, _))
-    val map3Results = getResults(applicativeWebFormViaMap3)
-    assert(map3Results ==
-      (WebFormSuccess,
-        failures(NameErrorMsg),
-        failures(NameErrorMsg, BirthDateErrorMsg),
-        failures(NameErrorMsg, BirthDateErrorMsg, PhoneNumberErrorMsg)))
-
-    def failures(errors: String*) = Failure(errors.head, errors.tail.toVector)
-  }
+//  behavior of "12.6 validationApplicative"
+//  it should "accumulate errors in WebForm example" in {
+//    val checkResultValidation = new CheckResult[Validation] {
+//      override def success[A](a: A) = Success(a)
+//      override def failure[A](s: String) = Failure(s, Vector())
+//    }
+//    import checkResultValidation._
+//
+//    def applicativeWebFormViaMap3(name: String, birthDate: String, phoneNumber: String) =
+//      validationApplicative.map3(
+//        validName(name),
+//        validBirthdate(birthDate),
+//        validPhone(phoneNumber))(WebForm(_, _, _))
+//    val map3Results = getResults(applicativeWebFormViaMap3)
+//    assert(map3Results ==
+//      (WebFormSuccess,
+//        failures(NameErrorMsg),
+//        failures(NameErrorMsg, BirthDateErrorMsg),
+//        failures(NameErrorMsg, BirthDateErrorMsg, PhoneNumberErrorMsg)))
+//
+//    def failures(errors: String*) = Failure(errors.head, errors.tail.toVector)
+//  }
 
   behavior of "p.214 ff. Functor Laws"
   it should "hold for ListApplicative" in listApplicativeTest.applicativeLaws
@@ -305,170 +304,170 @@ class ApplicativeSpec extends FlatSpec with PropertyChecks {
       ApplicativeTest[({ type f[x] = Option[List[x]] })#f](optionListCompose)
     optionListComposeTest.applicativeLaws
   }
-
-  behavior of "12.12 sequenceMap"
-  it should "work in ListApplicative" in listApplicativeTest.testSequenceMap
-  it should "work in OptionApplicative" in optionApplicativeTest.testSequenceMap
-
-  import Traverse._
-
-  behavior of "12.13.1 listTraverse"
-  it should "behave as described on page 219" in {
-    implicit val oa = optionApplicative
-    forAll("fma") { fma: List[Option[T]] =>
-      val expected = if (fma.contains(None)) None else Some(fma map (_.get))
-      assert(listTraverse.sequence(fma) == expected)
-    }
-  }
-
-  behavior of "12.13.2 optionTraverse"
-  it should "behave as described on page 219" in {
-    implicit val la = listApplicative
-    forAll("fma") { fma: Option[List[T]] =>
-      val expected =
-        if (fma.isEmpty) List(None)
-        else {
-          val l = fma.get
-          if (l.isEmpty) List() else List(Some(l.head))
-        }
-      assert(optionTraverse.sequence(fma) == expected)
-    }
-  }
-
-  private implicit def arbTree[T](implicit ev: Arbitrary[T]): Arbitrary[Tree[T]] = {
-    val MaxTreeDepth = 5 // to prevent StackOverflows
-    def arbitraryTree(maxDepth: Int): Gen[Tree[T]] =
-      for {
-        h <- arbitrary[T]
-        numChildren <- Gen.choose(0, maxDepth)
-      } yield Tree(h, List.fill(numChildren)(arbitraryTree(maxDepth - 1).sample.get))
-    Arbitrary(arbitraryTree(MaxTreeDepth))
-  }
-
-  behavior of "12.13.3 treeTraverse"
-  it should "behave as described on page 219" in {
-    def contains[A](ta: Tree[A], a: A): Boolean =
-      ta.head == a || ta.tail.exists(contains(_, a))
-    implicit val oa = optionApplicative
-    forAll("toa") { toa: Tree[Option[T]] =>
-      val expected = if (contains(toa, None)) None else Some(treeTraverse.map(toa)(_.get))
-      assert(treeTraverse.sequence(toa) == expected)
-    }
-  }
-
-  private[ApplicativeSpec] case class TraverseTest[F[_]](M: Traverse[F]) {
-    import M._
-
-    def testMap[B](f: T => B)(mf: F[T] => F[B])(implicit ev: Arbitrary[F[T]]) =
-      forAll("tt") { tt: F[T] =>
-        assert(map(tt)(_.toString) == mf(tt))
-      }
-
-    def testReverse[B](mf: F[T] => F[T])(implicit ev: Arbitrary[F[T]]) =
-      forAll("tt") { tt: F[T] =>
-        assert(reverse(tt) == mf(tt))
-      }
-
-    def testFoldLeft(f: (Int,T) => Int)(sum: F[T] => Int)(implicit ev: Arbitrary[F[T]]) =
-      forAll("tt") { tt: F[T] =>
-        assert(foldLeft(tt)(0)(f) == sum(tt))
-      }
-
-    implicit lazy val la = listApplicative
-    implicit lazy val lo = optionApplicative
-    def testFuse(expected: F[T] => (List[F[String]], Option[F[String]]))(implicit ev: Arbitrary[F[T]]) =
-      forAll("tt") { tt: F[T] =>
-        assert(fuse[List,Option,T,String](tt)(a => List(a.toString), a => Option(a.toString)) ==
-          expected(tt))
-      }
-  }
-
-  private lazy val listTraverseTest = new TraverseTest(listTraverse)
-  private lazy val optionTraverseTest = new TraverseTest(optionTraverse)
-  private lazy val treeTraverseTest = new TraverseTest(treeTraverse)
-
-  behavior of "12.14 Traverse.map via traverse"
-  it should "work for listTraverse" in listTraverseTest.testMap(_.toString)(_.map(_.toString))
-  it should "work for optionTraverse" in optionTraverseTest.testMap(_.toString)(_.map(_.toString))
-  it should "work for treeTraverse" in {
-    def mapTree[A, B](tt: Tree[A])(f: A => B): Tree[B] =
-      Tree(f(tt.head), tt.tail.map(mapTree(_)(f)))
-    treeTraverseTest.testMap(_.toString)(mapTree(_)(_.toString))
-  }
-
-  behavior of "12.16 Traverse.reverse"
-  it should "work for listTraverse" in listTraverseTest.testReverse(_.reverse)
-  it should "work for optionTraverse" in optionTraverseTest.testReverse(identity[Option[T]])
-  it should "obey the law on page 223 for listTraverse" in {
-      import listTraverse._
-      type F[T] = List[T]
-      forAll("x", "y") { (x: F[T], y: F[T]) =>
-        assert(
-          toList(reverse(x)) ++ toList(reverse(y)) ==
-          reverse(toList(y) ++ toList(x)))
-      }
-    }
-
-  behavior of "12.17 Traverse.foldLeft via mapAccum"
-  it should "work for listTraverse" in listTraverseTest.testFoldLeft(_ + _)(_.sum)
-  it should "work for optionTraverse" in optionTraverseTest.testFoldLeft(_ + _)(_.getOrElse(0))
-  it should "work for treeTraverse" in {
-    def sumTree(tt: Tree[Int]): Int = tt.head + tt.tail.map(sumTree).sum
-    treeTraverseTest.testFoldLeft(_ + _)(sumTree)
-  }
-
-  behavior of "12.18 Traverse.fuse"
-  it should "work for listTraverse" in
-    listTraverseTest.testFuse(lt => (List(lt map(_.toString)), Option(lt map(_.toString))))
-  it should "work for optionTraverse" in
-    optionTraverseTest.testFuse(lt => (List(lt map(_.toString)), Option(lt map(_.toString))))
-
-  behavior of "12.19 Traverse.compose"
-  it should "work for listTraverse" in
-    forAll("lo") { lo: List[Option[T]] =>
-      assert(listTraverse.compose(optionTraverse).map(lo)(identity) == lo)
-    }
-  it should "work for optionTraverse" in
-    forAll("ol") { ol: Option[List[T]] =>
-      assert(optionTraverse.compose(listTraverse).map(ol)(identity) == ol)
-    }
-
-  behavior of "12.20 Monad.composeM"
-
-  private def listMonad: Monad[List] =
-    new Monad[List] {
-    override def unit[A](a: => A): List[A] = List(a)
-    override def map[A,B](ma: List[A])(f: A => B): List[B] =
-      ma map f
-    override def flatMap[A,B](ma: List[A])(f: A => List[B]): List[B] =
-      ma flatMap f
-  }
-
-  private def optionMonad: Monad[Option] =
-    new Monad[Option] {
-    override def unit[A](a: => A): Option[A] = Option(a)
-    override def map[A,B](ma: Option[A])(f: A => B): Option[B] =
-      ma map f
-    override def flatMap[A,B](ma: Option[A])(f: A => Option[B]): Option[B] =
-      ma flatMap f
-  }
-
-  it should "work for listTraverse" in {
-    implicit lazy val lm = listMonad
-    implicit lazy val om = optionMonad
-    implicit lazy val lt = listTraverse
-    implicit lazy val ot = optionTraverse
-    forAll("lo") { lo: List[Option[T]] =>
-      assert(Monad.composeM[List, Option].flatMap(lo)(x => List(Option(x))) == lo)
-    }
-  }
-  it should "work for optionTraverse" in {
-    implicit lazy val lm = listMonad
-    implicit lazy val om = optionMonad
-    implicit lazy val lt = listTraverse
-    implicit lazy val ot = optionTraverse
-    forAll("ol") { ol: Option[List[T]] =>
-      assert(Monad.composeM[Option, List].flatMap(ol)(x => Option(List(x))) == ol)
-    }
-  }
+//
+//  behavior of "12.12 sequenceMap"
+//  it should "work in ListApplicative" in listApplicativeTest.testSequenceMap
+//  it should "work in OptionApplicative" in optionApplicativeTest.testSequenceMap
+//
+//  import Traverse._
+//
+//  behavior of "12.13.1 listTraverse"
+//  it should "behave as described on page 219" in {
+//    implicit val oa = optionApplicative
+//    forAll("fma") { fma: List[Option[T]] =>
+//      val expected = if (fma.contains(None)) None else Some(fma map (_.get))
+//      assert(listTraverse.sequence(fma) == expected)
+//    }
+//  }
+//
+//  behavior of "12.13.2 optionTraverse"
+//  it should "behave as described on page 219" in {
+//    implicit val la = listApplicative
+//    forAll("fma") { fma: Option[List[T]] =>
+//      val expected =
+//        if (fma.isEmpty) List(None)
+//        else {
+//          val l = fma.get
+//          if (l.isEmpty) List() else List(Some(l.head))
+//        }
+//      assert(optionTraverse.sequence(fma) == expected)
+//    }
+//  }
+//
+//  private implicit def arbTree[T](implicit ev: Arbitrary[T]): Arbitrary[Tree[T]] = {
+//    val MaxTreeDepth = 5 // to prevent StackOverflows
+//    def arbitraryTree(maxDepth: Int): Gen[Tree[T]] =
+//      for {
+//        h <- arbitrary[T]
+//        numChildren <- Gen.choose(0, maxDepth)
+//      } yield Tree(h, List.fill(numChildren)(arbitraryTree(maxDepth - 1).sample.get))
+//    Arbitrary(arbitraryTree(MaxTreeDepth))
+//  }
+//
+//  behavior of "12.13.3 treeTraverse"
+//  it should "behave as described on page 219" in {
+//    def contains[A](ta: Tree[A], a: A): Boolean =
+//      ta.head == a || ta.tail.exists(contains(_, a))
+//    implicit val oa = optionApplicative
+//    forAll("toa") { toa: Tree[Option[T]] =>
+//      val expected = if (contains(toa, None)) None else Some(treeTraverse.map(toa)(_.get))
+//      assert(treeTraverse.sequence(toa) == expected)
+//    }
+//  }
+//
+//  private[ApplicativeSpec] case class TraverseTest[F[_]](M: Traverse[F]) {
+//    import M._
+//
+//    def testMap[B](f: T => B)(mf: F[T] => F[B])(implicit ev: Arbitrary[F[T]]) =
+//      forAll("tt") { tt: F[T] =>
+//        assert(map(tt)(_.toString) == mf(tt))
+//      }
+//
+//    def testReverse[B](mf: F[T] => F[T])(implicit ev: Arbitrary[F[T]]) =
+//      forAll("tt") { tt: F[T] =>
+//        assert(reverse(tt) == mf(tt))
+//      }
+//
+//    def testFoldLeft(f: (Int,T) => Int)(sum: F[T] => Int)(implicit ev: Arbitrary[F[T]]) =
+//      forAll("tt") { tt: F[T] =>
+//        assert(foldLeft(tt)(0)(f) == sum(tt))
+//      }
+//
+//    implicit lazy val la = listApplicative
+//    implicit lazy val lo = optionApplicative
+//    def testFuse(expected: F[T] => (List[F[String]], Option[F[String]]))(implicit ev: Arbitrary[F[T]]) =
+//      forAll("tt") { tt: F[T] =>
+//        assert(fuse[List,Option,T,String](tt)(a => List(a.toString), a => Option(a.toString)) ==
+//          expected(tt))
+//      }
+//  }
+//
+//  private lazy val listTraverseTest = new TraverseTest(listTraverse)
+//  private lazy val optionTraverseTest = new TraverseTest(optionTraverse)
+//  private lazy val treeTraverseTest = new TraverseTest(treeTraverse)
+//
+//  behavior of "12.14 Traverse.map via traverse"
+//  it should "work for listTraverse" in listTraverseTest.testMap(_.toString)(_.map(_.toString))
+//  it should "work for optionTraverse" in optionTraverseTest.testMap(_.toString)(_.map(_.toString))
+//  it should "work for treeTraverse" in {
+//    def mapTree[A, B](tt: Tree[A])(f: A => B): Tree[B] =
+//      Tree(f(tt.head), tt.tail.map(mapTree(_)(f)))
+//    treeTraverseTest.testMap(_.toString)(mapTree(_)(_.toString))
+//  }
+//
+//  behavior of "12.16 Traverse.reverse"
+//  it should "work for listTraverse" in listTraverseTest.testReverse(_.reverse)
+//  it should "work for optionTraverse" in optionTraverseTest.testReverse(identity[Option[T]])
+//  it should "obey the law on page 223 for listTraverse" in {
+//      import listTraverse._
+//      type F[T] = List[T]
+//      forAll("x", "y") { (x: F[T], y: F[T]) =>
+//        assert(
+//          toList(reverse(x)) ++ toList(reverse(y)) ==
+//          reverse(toList(y) ++ toList(x)))
+//      }
+//    }
+//
+//  behavior of "12.17 Traverse.foldLeft via mapAccum"
+//  it should "work for listTraverse" in listTraverseTest.testFoldLeft(_ + _)(_.sum)
+//  it should "work for optionTraverse" in optionTraverseTest.testFoldLeft(_ + _)(_.getOrElse(0))
+//  it should "work for treeTraverse" in {
+//    def sumTree(tt: Tree[Int]): Int = tt.head + tt.tail.map(sumTree).sum
+//    treeTraverseTest.testFoldLeft(_ + _)(sumTree)
+//  }
+//
+//  behavior of "12.18 Traverse.fuse"
+//  it should "work for listTraverse" in
+//    listTraverseTest.testFuse(lt => (List(lt map(_.toString)), Option(lt map(_.toString))))
+//  it should "work for optionTraverse" in
+//    optionTraverseTest.testFuse(lt => (List(lt map(_.toString)), Option(lt map(_.toString))))
+//
+//  behavior of "12.19 Traverse.compose"
+//  it should "work for listTraverse" in
+//    forAll("lo") { lo: List[Option[T]] =>
+//      assert(listTraverse.compose(optionTraverse).map(lo)(identity) == lo)
+//    }
+//  it should "work for optionTraverse" in
+//    forAll("ol") { ol: Option[List[T]] =>
+//      assert(optionTraverse.compose(listTraverse).map(ol)(identity) == ol)
+//    }
+//
+//  behavior of "12.20 Monad.composeM"
+//
+//  private def listMonad: Monad[List] =
+//    new Monad[List] {
+//    override def unit[A](a: => A): List[A] = List(a)
+//    override def map[A,B](ma: List[A])(f: A => B): List[B] =
+//      ma map f
+//    override def flatMap[A,B](ma: List[A])(f: A => List[B]): List[B] =
+//      ma flatMap f
+//  }
+//
+//  private def optionMonad: Monad[Option] =
+//    new Monad[Option] {
+//    override def unit[A](a: => A): Option[A] = Option(a)
+//    override def map[A,B](ma: Option[A])(f: A => B): Option[B] =
+//      ma map f
+//    override def flatMap[A,B](ma: Option[A])(f: A => Option[B]): Option[B] =
+//      ma flatMap f
+//  }
+//
+//  it should "work for listTraverse" in {
+//    implicit lazy val lm = listMonad
+//    implicit lazy val om = optionMonad
+//    implicit lazy val lt = listTraverse
+//    implicit lazy val ot = optionTraverse
+//    forAll("lo") { lo: List[Option[T]] =>
+//      assert(Monad.composeM[List, Option].flatMap(lo)(x => List(Option(x))) == lo)
+//    }
+//  }
+//  it should "work for optionTraverse" in {
+//    implicit lazy val lm = listMonad
+//    implicit lazy val om = optionMonad
+//    implicit lazy val lt = listTraverse
+//    implicit lazy val ot = optionTraverse
+//    forAll("ol") { ol: Option[List[T]] =>
+//      assert(Monad.composeM[Option, List].flatMap(ol)(x => Option(List(x))) == ol)
+//    }
+//  }
 }
