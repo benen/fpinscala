@@ -190,7 +190,6 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] {
     traverse(fma)(ma => ma)
 
   /* Ex 12.14 */
-
   type Id[A] = A
   val idApplicative = new Applicative[Id] {
     override def unit[A](a: => A): Id[A] = a
@@ -202,6 +201,10 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] {
   }
 
   import Applicative._
+
+  // Ex 12.15
+  // Can you define map in terms of foldMap?
+  // You need a constructor that allows us to 'fuse' or codistribute multiple values
 
   override def foldMap[A,B](as: F[A])(f: A => B)(mb: Monoid[B]): B =
     traverse[({type f[x] = Const[B,x]})#f,A,Nothing](
