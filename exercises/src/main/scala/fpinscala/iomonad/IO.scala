@@ -377,9 +377,24 @@ object IO3 {
     override def unit[A](a: => A): Free[F, A] = Return(a)
   }
 
+//  @annotation.tailrec
+//  def trampolineStep[A, B](f: Free[Function0, A]): Free[Function0, A] = f match {
+//    case FlatMap(FlatMap(s, f), g) => step(s flatMap (a => f(a) flatMap g))
+//    case FlatMap(Return(a), f) => step(f(a))
+//    case _ => f
+//  }
+
   // Exercise 2: Implement a specialized `Function0` interpreter.
-  // @annotation.tailrec
-  def runTrampoline[A](a: Free[Function0,A]): A = ???
+  @annotation.tailrec
+  def runTrampoline[A](a: Free[Function0,A]): A = a match {
+    case Return(a) => a
+    case Suspend(s) => s()
+    case FlatMap(x, f) => x match {
+      case Return(a) => runTrampoline(f(a))
+      case Suspend(s) => runTrampoline(f(s()))
+      case FlatMap(y, g) => runTrampoline(y flatMap (a => g(a) flatMap f))
+    }
+  }
 
   // Exercise 3: Implement a `Free` interpreter which works for any `Monad`
   def run[F[_],A](a: Free[F,A])(implicit F: Monad[F]): F[A] = ???
