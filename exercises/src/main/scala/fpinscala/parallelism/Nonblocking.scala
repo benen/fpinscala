@@ -7,7 +7,7 @@ import language.implicitConversions
 object Nonblocking {
 
   trait Future[+A] {
-    private[parallelism] def apply(k: A => Unit): Unit
+    private[parallelism] def apply(k: A => Unit)(e: Throwable => Unit): Unit
   }
 
   type Par[+A] = ExecutorService => Future[A]
@@ -15,7 +15,7 @@ object Nonblocking {
   object Par {
 
     def run[A](es: ExecutorService)(p: Par[A]): A = {
-      val ref = new java.util.concurrent.atomic.AtomicReference[A] // A mutable, threadsafe reference, to use for storing the result
+      val ref = new AtomicReference[A] // A mutable, threadsafe reference, to use for storing the result
       val latch = new CountDownLatch(1) // A latch which, when decremented, implies that `ref` has the result
       p(es) { a => ref.set(a); latch.countDown } // Asynchronously set the result, and decrement the latch
       latch.await // Block until the `latch.countDown` is invoked asynchronously
@@ -107,6 +107,8 @@ object Nonblocking {
       map(sequenceBalanced(as.toIndexedSeq))(_.toList)
 
     // exercise answers
+
+    /* Ex. 7.10 */
 
     /*
      * We can implement `choice` as a new primitive.
