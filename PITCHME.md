@@ -44,14 +44,14 @@ Note:
 ### Recap
 
 And settled on the representation: 
+
 ```scala
 type Par[A] = ExecutorService => Future[A]
 
-def unit[A](a: A): Par[A]
-def fork[A](p: Par[A]): Par[A]
-def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C]
-def run[A](s: ExecutorService)(p: Par[A]): Future[A]
-
+def unit[A]​(a: A): Par[A]
+def fork[A]​(p: Par[A]): Par[A]
+def map2[A, B, C]​(a: Par[A], b: Par[B])(f: (A, B) => C): Par[C]
+def run[A]​(s: ExecutorService)(p: Par[A]): Future[A]
 ```
 
 Note:
@@ -82,7 +82,7 @@ Note:
 ### The Problem with our API
 
 ```scala
-def fork[A](a: => Par[A]): Par[A] = 
+def fork[A]​(a: => Par[A]): Par[A] = 
   es => es.submit(new Callable[A]) {
     def call = a(es).get
   }
@@ -129,7 +129,7 @@ the exposed part of our API, we can be certain our side effects cannot be observ
 ### Working towards a Non-Blocking implementation
 
 ```scala
-def run[A](es: ExecutorService)(p: Par[A]): A = {
+def run[A]​​(es: ExecutorService)(p: Par[A]): A = {
   val ref = new AtomicReference[A]
   val latch = new CountDownLatch(1)
   p(es) { a => ref.set(a); latch.countDown }
@@ -149,12 +149,12 @@ Note:
 ### Working towards a Non-Blocking implementation
 
 ```scala
-def unit[A](a: A): Par[A] = 
+def unit[A]​​(a: A): Par[A] = 
   es => new Future[A] {
     def apply(cb: A => Unit): Unit = cb(a)
   }
 
-def fork[A](a: => Par[A]): Par[A] =
+def fork[A]​​(a: => Par[A]): Par[A] =
   es => new Future[A] {
     def apply(cb: A => Unit): Unit =
       eval(es)(a(es)(cb))
@@ -206,7 +206,7 @@ Got message: 'Hello'
 ### Implementing Map2
 
 ```scala
-def map2[A,B,C](p: Par[A], p2: Par[B])(f: (A,B) => C): Par[C] =
+def map2[A,B,C]​​(p: Par[A], p2: Par[B])(f: (A,B) => C): Par[C] =
   es => new Future[C] {
     def apply(cb: C => Unit): Unit = {
       var ar: Option[A] = None
@@ -263,7 +263,7 @@ Implement choiceN and then `choice` in terms of `choiceN`
 ### Exercise 7.12
 
 ```scala
-def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V]
+def choiceMap[K, V]​​(key: Par[K])(choices: Map[K, Par[V]]): Par[V]
 ```
 
 Come up with a more general combinator with which you can implement `choice`, `choiceN` and `choiceMap` 
@@ -273,7 +273,7 @@ Come up with a more general combinator with which you can implement `choice`, `c
 ### Exercise 7.13
 
 ```scala
-def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B]
+def chooser[A, B]​​(pa: Par[A])(choices: A => Par[B]): Par[B]
 ```
 
 Implement the new primitive `chooser`, and then use it to implement `choice` and `choiceN`
@@ -285,7 +285,7 @@ Implement the new primitive `chooser`, and then use it to implement `choice` and
 Chooser is now so general, chooser is not really an appropriate name for it. 
 
 ```scala
-def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B]
+def chooser[A, B]​​(pa: Par[A])(choices: A => Par[B]): Par[B]
 ```
 
 In essence, given the result of a parallel computation it generates a new one from it. It may not be the case that we
@@ -299,9 +299,9 @@ of operation is called `bind` in Haskell and `flatMap` in most Scala libraries.
 Is `flatMap` really the most general primitive we can come up with though? By definition it involves two operations:
 
 ```scala
-def map[A, B](p: Par[A])(f: A => B): Par[B]
+def map[A, B]​​(p: Par[A])(f: A => B): Par[B]
 
-def join[A](p: Par[Par[A]]): Par[A] // or flatten
+def join[A]​​(p: Par[Par[A]]): Par[A] // or flatten
 ```
 
 ---
