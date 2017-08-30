@@ -7,14 +7,14 @@ import scala.concurrent.{Future => SFuture}
 import scala.concurrent.ExecutionContext.Implicits.global
 import fpinscala.parallelism.Par.Par
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import org.scalatest.prop.PropertyChecks
 
 /**
   * Created by benen on 03/08/17.
   */
-class ParSpec extends FlatSpec with PropertyChecks with Matchers with BeforeAndAfter with ScalaFutures {
+class ParSpec extends FlatSpec with PropertyChecks with Matchers with BeforeAndAfter with ScalaFutures with Eventually {
 
   val asyncThreadCount = new AtomicInteger
   val threadFactory: ThreadFactory =
@@ -31,7 +31,7 @@ class ParSpec extends FlatSpec with PropertyChecks with Matchers with BeforeAndA
     executorService = Executors.newCachedThreadPool(threadFactory)
   }
 
-  behavior of "Par.map2WithTimeouts"
+  behavior of "7.3 map2WithTimeouts"
 
   it should "apply f correctly" in {
     // given
@@ -56,7 +56,7 @@ class ParSpec extends FlatSpec with PropertyChecks with Matchers with BeforeAndA
     // then BOOM!
   }
 
-  behavior of "Par.asyncF"
+  behavior of "7.4 asyncF"
 
   it should "apply f in a separate thread" in {
     // given
@@ -72,7 +72,7 @@ class ParSpec extends FlatSpec with PropertyChecks with Matchers with BeforeAndA
     }
   }
 
-  behavior of "Par.sequence"
+  behavior of "7.5 sequence"
 
   it should "wrap the results in a single par" in {
     // given
@@ -85,28 +85,139 @@ class ParSpec extends FlatSpec with PropertyChecks with Matchers with BeforeAndA
     whenReady(result.asScala){ inner => inner shouldEqual List(1, 2, 3) }
   }
 
-  it should "always deadlock" in {
-    // given
-    val gen: Gen[(Int, List[Par[Int]])] = for {
-      n <- Gen.choose(2, Int.MaxValue)
-      l <- Gen.listOfN(n / 2, Arbitrary.arbitrary[Int])
-    } yield (n, l.map(asPar(_)))
-
-
-    // when
-    forAll(gen){case (n, l) =>
-      val es = Executors.newFixedThreadPool(n)
-      a[TimeoutException] should be thrownBy Par.sequence(l)(es)
-    }
-
-  }
-
-  behavior of "Par.filter"
+  behavior of "7.6 filter"
 
   it should "filter the list in parallel" in {
     forAll(Gen.listOf(Arbitrary.arbitrary[Int])){ list =>
       def isEven: Int => Boolean = _ % 2 == 0
       list.filter(isEven) shouldEqual Par.parFilter(list)(isEven).get
+      assertAsync
+    }
+  }
+
+  behavior of "7.11.1 choiceN"
+
+  it should "work asynchronously for non-empty Lists" in {
+    val intPars = List(Par.lazyUnit(1), Par.lazyUnit(2), Par.lazyUnit(3))
+    val n = Par.lazyUnit(1)
+    val parInt = Par.choiceN(n)(intPars).run
+    eventually {
+      assert(parInt.get == 2)
+      assertAsync
+    }
+  }
+
+  behavior of "7.11.2 choiceViaChoiceN"
+
+  it should "work asynchronously for true case" in {
+    val trueChoice = Par.choiceViaChoiceN(Par.lazyUnit(true))(Par.lazyUnit("yes"), Par.lazyUnit("no")).run
+    eventually {
+      assert(trueChoice.get == "yes")
+      assertAsync
+    }
+  }
+
+  it should "work asynchronously for false case" in {
+    val falseChoice = Par.choiceViaChoiceN(Par.lazyUnit(false))(Par.lazyUnit("yes"), Par.lazyUnit("no")).run
+    eventually {
+      assert(falseChoice.get == "no")
+      assertAsync
+    }
+  }
+
+  behavior of "7.12 choiceMap"
+
+  it should "work asynchronously" in {
+    val choices = Map(1 -> Par.lazyUnit(1), 2 -> Par.lazyUnit(2), 3 -> Par.lazyUnit(3))
+    val key = Par.lazyUnit(2)
+    val parInt = Par.choiceMap(key)(choices).run
+    eventually {
+      assert(parInt.get == 2)
+      assertAsync
+    }
+  }
+
+  behavior of "7.13.1 chooser"
+
+  it should "work asynchronously for List" in {
+    val intPars = List(Par.lazyUnit(1), Par.lazyUnit(2), Par.lazyUnit(3))
+    val n = Par.lazyUnit(1)
+    val parInt = Par.chooser(n)(intPars).run
+    eventually {
+      assert(parInt.get == 2)
+      assertAsync
+    }
+  }
+
+  it should "work asynchronously for Map" in {
+    val choices = Map(1 -> Par.lazyUnit(1), 2 -> Par.lazyUnit(2), 3 -> Par.lazyUnit(3))
+    val key = Par.lazyUnit(2)
+    val parInt = Par.chooser(key)(choices).run
+    eventually {
+      assert(parInt.get == 2)
+      assertAsync
+    }
+  }
+
+  behavior of "7.13.2 choiceViaChooser"
+
+  it should "work asynchronously for true case" in {
+    val trueChoice = Par.choiceViaChooser(Par.lazyUnit(true))(Par.lazyUnit("yes"), Par.lazyUnit("no")).run
+    eventually {
+      assert(trueChoice.get == "yes")
+      assertAsync
+    }
+  }
+
+  it should "work asynchronously for false case" in {
+    val falseChoice = Par.choiceViaChooser(Par.lazyUnit(false))(Par.lazyUnit("yes"), Par.lazyUnit("no")).run
+    eventually {
+      assert(falseChoice.get == "no")
+      assertAsync
+    }
+  }
+
+  behavior of "7.13.3 choiceNViaChooser"
+
+  it should "work asynchronously for List" in {
+    val intPars = List(Par.lazyUnit(1), Par.lazyUnit(2), Par.lazyUnit(3))
+    val n = Par.lazyUnit(1)
+    val parInt = Par.choiceNViaChooser(n)(intPars).run
+    eventually {
+      assert(parInt.get == 2)
+      assertAsync
+    }
+  }
+
+  behavior of "7.14.1 join"
+
+  it should "work asynchronously" in {
+    val ppi = Par.lazyUnit(Par.lazyUnit(42))
+    val i = Par.join(ppi)
+    eventually {
+      assert(i.get == 42)
+      assertAsync
+    }
+  }
+
+  behavior of "7.14.2 flatMapViaJoin"
+
+  it should "work asynchronously" in {
+    val pi = Par.lazyUnit(42)
+    val i = Par.flatMapViaJoin(pi)(Par.lazyUnit(_))
+    eventually {
+      assert(i.get == 42)
+      assertAsync
+    }
+  }
+
+  behavior of "7.14.3 joinViaFlatMap"
+
+  it should "work asynchronously" in {
+    val ppi = Par.lazyUnit(Par.lazyUnit(42))
+    val i = Par.joinViaFlatMap(ppi)
+    eventually {
+      assert(i.get == 42)
       assertAsync
     }
   }

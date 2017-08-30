@@ -32,6 +32,6 @@ package object iomonad {
   // reflects that is is unsafe, i.e. that it has side effects,
   // and that it _performs_ the actual I/O.
   import java.util.concurrent.ExecutorService
-  def unsafePerformIO[A](io: IO[A])(implicit E: ExecutorService): A =
+  def unsafePerformIO[A](io: IO[A])(implicit E: ExecutorService): Either[Throwable, A] =
     Par.run(E) { IO3.run(io)(IO3.parMonad) }
 }

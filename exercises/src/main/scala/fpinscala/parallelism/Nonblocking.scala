@@ -7,38 +7,41 @@ import language.implicitConversions
 object Nonblocking {
 
   trait Future[+A] {
-    private[parallelism] def apply(k: A => Unit)(e: Throwable => Unit): Unit
+    private[parallelism] def apply(k: A => Unit)(t: Throwable => Unit): Unit
   }
 
   type Par[+A] = ExecutorService => Future[A]
 
   object Par {
 
-    def run[A](es: ExecutorService)(p: Par[A]): A = {
-      val ref = new AtomicReference[A] // A mutable, threadsafe reference, to use for storing the result
-      val latch = new CountDownLatch(1) // A latch which, when decremented, implies that `ref` has the result
-      p(es) { a => ref.set(a); latch.countDown } // Asynchronously set the result, and decrement the latch
-      latch.await // Block until the `latch.countDown` is invoked asynchronously
-      ref.get // Once we've passed the latch, we know `ref` has been set, and return its value
+    def run[A](es: ExecutorService)(p: Par[A]): Either[Throwable, A] = {
+      val ref = new AtomicReference[Either[Throwable, A]]
+      val latch = new CountDownLatch(1)
+      p(es) { a => ref.set(Right(a)); latch.countDown } { case t => ref.set(Left(t)); latch.countDown() }
+      latch.await
+      ref.get
     }
+
+    private def attempt[A](cb: => Unit, err: Throwable => Unit): Unit =
+      try cb catch { case t: Throwable => err(t) }
 
     def unit[A](a: A): Par[A] =
       es => new Future[A] {
-        def apply(cb: A => Unit): Unit =
-          cb(a)
+        def apply(cb: A => Unit)(err: Throwable => Unit) =
+          attempt(cb(a), err)
       }
 
     /** A non-strict version of `unit` */
     def delay[A](a: => A): Par[A] =
       es => new Future[A] {
-        def apply(cb: A => Unit): Unit =
-          cb(a)
+        def apply(cb: A => Unit)(err: Throwable => Unit): Unit =
+          attempt(cb(a), err)
       }
 
     def fork[A](a: => Par[A]): Par[A] =
       es => new Future[A] {
-        def apply(cb: A => Unit): Unit =
-          eval(es)(a(es)(cb))
+        def apply(cb: A => Unit)(err: Throwable => Unit): Unit =
+          attempt(eval(es)(a(es)(cb)(err)), err)
       }
 
     /**
@@ -46,7 +49,7 @@ object Nonblocking {
      * This will come in handy in Chapter 13.
      */
     def async[A](f: (A => Unit) => Unit): Par[A] = es => new Future[A] {
-      def apply(k: A => Unit) = f(k)
+      def apply(k: A => Unit)(err: Throwable => Unit) = attempt(f(k), err)
     }
 
     /**
@@ -59,7 +62,7 @@ object Nonblocking {
 
     def map2[A,B,C](p: Par[A], p2: Par[B])(f: (A,B) => C): Par[C] =
       es => new Future[C] {
-        def apply(cb: C => Unit): Unit = {
+        def apply(cb: C => Unit)(err: Throwable => Unit): Unit = attempt({
           var ar: Option[A] = None
           var br: Option[B] = None
           val combiner = Actor[Either[A,B]](es) {
@@ -70,16 +73,16 @@ object Nonblocking {
               if (ar.isDefined) eval(es)(cb(f(ar.get,b)))
               else br = Some(b)
           }
-          p(es)(a => combiner ! Left(a))
-          p2(es)(b => combiner ! Right(b))
-        }
+          p(es)(a => combiner ! Left(a))(err)
+          p2(es)(b => combiner ! Right(b))(err)
+        }, err)
       }
 
     // specialized version of `map`
     def map[A,B](p: Par[A])(f: A => B): Par[B] =
       es => new Future[B] {
-        def apply(cb: B => Unit): Unit =
-          p(es)(a => eval(es) { cb(f(a)) })
+        def apply(cb: B => Unit)(err: Throwable => Unit): Unit =
+          p(es)(a => eval(es) { cb(f(a)) })(err)
       }
 
     def lazyUnit[A](a: => A): Par[A] =
@@ -126,14 +129,15 @@ object Nonblocking {
      */
     def choice[A](p: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
       es => new Future[A] {
-        def apply(cb: A => Unit): Unit =
+        def apply(cb: A => Unit)(err: Throwable => Unit): Unit =
           p(es) { b =>
-            if (b) eval(es) { t(es)(cb) }
-            else eval(es) { f(es)(cb) }
-          }
+            if (b) eval(es) { t(es)(cb)(err) }
+            else eval(es) { f(es)(cb)(err) }
+          }(err)
       }
 
-    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = ???
+    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] =
+      ???
 
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
       ???

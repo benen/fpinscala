@@ -110,6 +110,56 @@ object Par {
   // two futures along with creating a new future that wraps the result that also gets executed. Therefore for a
   // threadpool of size n, any sequence of size n / 2 should result in a deadlock.
 
+  /* Ex. 7.11.1 */
+  def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = {
+    es =>
+      val index = run(es)(p).get()
+      run(es)(ps(index))
+  }
+
+  /* Ex. 7.11.2 */
+  def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] = {
+    val index = map(a)(if(_) 0 else 1)
+    choiceN(index)(List(ifTrue, ifFalse))
+  }
+
+  /* Ex. 7.12.1 */
+  def choiceMap[K,V](p: Par[K])(ps: Map[K,Par[V]]): Par[V] = {
+    es =>
+      val key = run(es)(p).get
+      run(es)(ps(key))
+  }
+
+  /* Ex. 7.13.1 */
+  def chooser[A,B](p: Par[A])(f: A => Par[B]): Par[B] = {
+    es =>
+      f(run(es)(p).get)(es)
+  }
+
+  /* Ex. 7.13.2 */
+  def choiceViaChooser[A](p: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] =
+    chooser(p)(if (_) f else t)
+
+  /* Ex. 7.13.3 */
+  def choiceNViaChooser[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
+    chooser(p)(choices(_))
+
+  /* Ex. 7.14.1 */
+  def join[A](p: Par[Par[A]]): Par[A] = {
+    es =>
+      val pa = run(es)(p).get()
+      run(es)(pa)
+  }
+
+  /* Ex. 7.14.2 */
+  def flatMap[A,B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
+
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
+    flatMap(a)(pa => pa)
+
+  /* Ex. 7.14.3 */
+  def flatMapViaJoin[A,B](p: Par[A])(f: A => Par[B]): Par[B] =
+    join(map(p)(f))
 
 
 
