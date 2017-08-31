@@ -191,7 +191,7 @@ Note:
 
 Creating an actor: 
 ```scala
-val echoer = Actor[String](Executors.newFixedThreadPool){
+val echoer = Actor[String]​(Executors.newFixedThreadPool){
    msg => println(s"Got message '$msg'")
 }
 ```
@@ -206,12 +206,12 @@ Got message: 'Hello'
 ### Implementing Map2
 
 ```scala
-def map2[A,B,C]​​(p: Par[A], p2: Par[B])(f: (A,B) => C): Par[C] =
+def map2[A,B,C]​(p: Par[A], p2: Par[B])(f: (A,B) => C): Par[C] =
   es => new Future[C] {
     def apply(cb: C => Unit): Unit = {
       var ar: Option[A] = None
       var br: Option[B] = None
-      val combiner = Actor[Either[A,B]](es) {
+      val combiner = Actor[Either[A,B]]​(es) {
         case Left(a) =>
           if (br.isDefined) eval(es)(cb(f(a,br.get)))
           else ar = Some(a)
@@ -314,7 +314,14 @@ Implement join. Can you see how to implement `flatMap` using `join`? And can you
 
 ### Summary
 
+* We've explored api design through the lens of FP 
+* The difference between primitive and derived combinators
+* The value of _proving_ some laws for our APIs
+* We've seen how a pure API can still be developed on top of side effects
+
 Note:
+
+1. Description vs. Interpreter
 
 ---
 
