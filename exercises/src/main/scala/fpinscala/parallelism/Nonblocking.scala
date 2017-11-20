@@ -2,22 +2,24 @@ package fpinscala.parallelism
 
 import java.util.concurrent.{Callable, CountDownLatch, ExecutorService}
 import java.util.concurrent.atomic.AtomicReference
+
 import language.implicitConversions
+import scala.util.{Failure, Success, Try}
 
 object Nonblocking {
 
   trait Future[+A] {
-    private[parallelism] def apply(k: A => Unit): Unit
+    private[parallelism] def apply(k: A => Unit)(err: Throwable => Unit): Unit
   }
 
   type Par[+A] = ExecutorService => Future[A]
 
   object Par {
 
-    def run[A](es: ExecutorService)(p: Par[A]): A = {
-      val ref = new java.util.concurrent.atomic.AtomicReference[A] // A mutable, threadsafe reference, to use for storing the result
+    def run[A](es: ExecutorService)(p: Par[A]): Try[A] = {
+      val ref = new java.util.concurrent.atomic.AtomicReference[Try[A]] // A mutable, threadsafe reference, to use for storing the result
       val latch = new CountDownLatch(1) // A latch which, when decremented, implies that `ref` has the result
-      p(es) { a => ref.set(a); latch.countDown } // Asynchronously set the result, and decrement the latch
+      p(es) { a => ref.set(Success(a)); latch.countDown }{ t => ref.set(Failure(t))} // Asynchronously set the result, and decrement the latch
       latch.await // Block until the `latch.countDown` is invoked asynchronously
       ref.get // Once we've passed the latch, we know `ref` has been set, and return its value
     }
@@ -31,14 +33,14 @@ object Nonblocking {
     /** A non-strict version of `unit` */
     def delay[A](a: => A): Par[A] =
       es => new Future[A] {
-        def apply(cb: A => Unit): Unit =
-          cb(a)
+        def apply(cb: A => Unit)(err: Throwable => Unit): Unit =
+          try { cb(a) } catch { case t => err(t) }
       }
 
     def fork[A](a: => Par[A]): Par[A] =
       es => new Future[A] {
-        def apply(cb: A => Unit): Unit =
-          eval(es)(a(es)(cb))
+        def apply(cb: A => Unit)(err: Throwable => Unit): Unit =
+          eval(es)(a(es)(cb))(err)
       }
 
     /**
@@ -53,8 +55,8 @@ object Nonblocking {
      * Helper function, for evaluating an action
      * asynchronously, using the given `ExecutorService`.
      */
-    def eval(es: ExecutorService)(r: => Unit): Unit =
-      es.submit(new Callable[Unit] { def call = r })
+    def eval(es: ExecutorService)(r: => Unit)(e: Throwable => Unit): Unit =
+      es.submit(new Callable[Unit] { def call = try { r } catch { case t => e(t) } })
 
 
     def map2[A,B,C](p: Par[A], p2: Par[B])(f: (A,B) => C): Par[C] =

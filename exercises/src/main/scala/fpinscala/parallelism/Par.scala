@@ -112,46 +112,52 @@ object Par {
 
   /* Ex. 7.11.1 */
   def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = {
-    ???
+    es =>
+      val index = p(es).get()
+      ps(index)(es)
   }
 
   /* Ex. 7.11.2 */
   def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] = {
-    ???
+      choiceN(map(a)(if (_) 0 else 1))(List(ifTrue, ifFalse))
   }
 
   /* Ex. 7.12.1 */
   def choiceMap[K,V](p: Par[K])(ps: Map[K,Par[V]]): Par[V] = {
-    ???
+    es =>
+      val key = p(es).get
+      ps(key)(es)
   }
 
   /* Ex. 7.13.1 */
   def chooser[A,B](p: Par[A])(f: A => Par[B]): Par[B] = {
-    ???
+    es =>
+      val a = p(es).get
+      f(a)(es)
   }
 
   /* Ex. 7.13.2 */
   def choiceViaChooser[A](p: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] =
-    ???
+    chooser(p)(if (_) t else f )
 
   /* Ex. 7.13.3 */
   def choiceNViaChooser[A](p: Par[Int])(choices: List[Par[A]]): Par[A] =
-    ???
+    chooser(p)(i => choices(i))
 
   /* Ex. 7.14.1 */
   def join[A](p: Par[Par[A]]): Par[A] = {
-    ???
+    es => p(es).get()(es)
   }
 
   /* Ex. 7.14.2 */
   def flatMap[A,B](p: Par[A])(f: A => Par[B]): Par[B] = chooser(p)(f)
 
   def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
-    ???
+    flatMap(a)(identity)
 
   /* Ex. 7.14.3 */
   def flatMapViaJoin[A,B](p: Par[A])(f: A => Par[B]): Par[B] =
-    ???
+    join(map(p)(f))
 
 
 
