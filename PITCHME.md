@@ -1,5 +1,5 @@
 ## Functional Programming in Scala
-#### Talks for the red book reading group in Schibsted
+#### Discussion slides for Schibsted's Red Book reading group 
 
 ###### Benen Cahill [@benen](https://github.com/benen)
 
